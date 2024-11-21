@@ -1,9 +1,13 @@
+import passport from "passport";
 import { Router } from "express";
-import { getAdminData, postAdminData } from "../controllers/adminController.js";
+import { isAuthenticated } from "../middleware/verifyAdmin.js";
+import { getAdmin, login, logout, register } from "../controllers/adminController.js";
 
 const router = Router();
 
-router.get("/", getAdminData);
-router.post("/", postAdminData);
+router.post('/login', passport.authenticate('local'), login);
+router.post('/logout', logout);
+router.post('/register', register);
+router.get('/protected', isAuthenticated, getAdmin);
 
 export default router;

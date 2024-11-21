@@ -4,6 +4,8 @@ import bcrypt from "bcrypt";
 const AdminSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  otp: { type: String }, 
+  otpExpires: { type: Date },
 });
 
 // Hash password before saving

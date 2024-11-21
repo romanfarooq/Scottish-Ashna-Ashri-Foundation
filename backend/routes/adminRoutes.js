@@ -1,13 +1,20 @@
-import passport from "passport";
 import { Router } from "express";
+import { authenticate } from "passport";
 import { isAuthenticated } from "../middleware/verifyAdmin.js";
-import { getAdmin, login, logout, register } from "../controllers/adminController.js";
+import {
+  login,
+  logout,
+  changePassword,
+  forgotPassword,
+  resetPassword,
+} from "../controllers/adminController.js";
 
 const router = Router();
 
-router.post('/login', passport.authenticate('local'), login);
-router.post('/logout', logout);
-router.post('/register', register);
-router.get('/protected', isAuthenticated, getAdmin);
+router.post("/login", authenticate("local"), login);
+router.post("/logout", logout);
+router.post("/change-password", isAuthenticated, changePassword);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 
 export default router;

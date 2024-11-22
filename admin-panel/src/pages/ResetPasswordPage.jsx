@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock, Loader2, ArrowLeft } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,6 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 
 export function ResetPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -94,7 +94,9 @@ export function ResetPasswordPage() {
                   },
                 })}
                 className={cn(
-                  errors.newPassword ? "border-red-500 focus-visible:ring-red-500" : ""
+                  errors.newPassword
+                    ? "border-red-500 focus-visible:ring-red-500"
+                    : "",
                 )}
               />
               <Button
@@ -112,7 +114,9 @@ export function ResetPasswordPage() {
               </Button>
             </div>
             {errors.newPassword && (
-              <p className="text-sm text-red-500">{errors.newPassword.message}</p>
+              <p className="text-sm text-red-500">
+                {errors.newPassword.message}
+              </p>
             )}
           </div>
 
@@ -128,11 +132,13 @@ export function ResetPasswordPage() {
                 placeholder="Confirm your new password"
                 {...register("confirmPassword", {
                   required: "Please confirm your password",
-                  validate: value =>
+                  validate: (value) =>
                     value === password || "Passwords do not match",
                 })}
                 className={cn(
-                  errors.confirmPassword ? "border-red-500 focus-visible:ring-red-500" : ""
+                  errors.confirmPassword
+                    ? "border-red-500 focus-visible:ring-red-500"
+                    : "",
                 )}
               />
               <Button
@@ -150,7 +156,9 @@ export function ResetPasswordPage() {
               </Button>
             </div>
             {errors.confirmPassword && (
-              <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
+              <p className="text-sm text-red-500">
+                {errors.confirmPassword.message}
+              </p>
             )}
           </div>
 
@@ -178,5 +186,3 @@ export function ResetPasswordPage() {
     </Card>
   );
 }
-
-export default ResetPasswordPage;

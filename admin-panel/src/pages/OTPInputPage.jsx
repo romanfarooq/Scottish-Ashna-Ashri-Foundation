@@ -3,6 +3,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -10,11 +15,6 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
 
 export function OTPInputPage() {
   const navigate = useNavigate();

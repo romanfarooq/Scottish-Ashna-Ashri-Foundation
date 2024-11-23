@@ -6,6 +6,11 @@ export function LoginLayout() {
   return (
     <div className="flex min-h-screen w-full">
       <div className="relative flex min-h-screen flex-1 flex-col items-center justify-center overflow-hidden bg-gray-100 p-8">
+        <img
+          src="/src/assets/images/logo.png"
+          alt="Scottish Ashna Ashri Foundation Logo"
+          className="z-10 mb-4 h-52 w-auto"
+        />
         <h1 className="z-10 mb-4 text-center text-4xl font-bold text-gray-800">
           Scottish Ashna Ashri Foundation
         </h1>

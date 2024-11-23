@@ -88,9 +88,10 @@ export function ResetPasswordPage() {
                     message: "Password must be at least 8 characters long",
                   },
                   pattern: {
-                    value: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/,
+                    value:
+                      /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
                     message:
-                      "Password must contain at least one letter and one number",
+                      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
                   },
                 })}
                 className={cn(

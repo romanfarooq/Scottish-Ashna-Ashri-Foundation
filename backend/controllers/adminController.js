@@ -45,6 +45,10 @@ export const forgotPassword = async (req, res) => {
   const { email } = req.body;
 
   try {
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
     const admin = await Admin.findOne({ email });
     if (!admin) {
       return res.status(404).json({ message: "Admin not found" });
@@ -95,6 +99,10 @@ export const verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
 
   try {
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required" });
+    }
+
     const admin = await Admin.findOne({ email });
     if (!admin) {
       return res.status(404).json({ message: "Admin not found" });
@@ -124,6 +132,10 @@ export const resetPassword = async (req, res) => {
   const { email, otp, newPassword } = req.body;
 
   try {
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ message: "Email, OTP, and new password are required" });
+    }
+
     const admin = await Admin.findOne({ email });
     if (!admin) {
       return res.status(404).json({ message: "Admin not found" });
@@ -148,7 +160,7 @@ export const resetPassword = async (req, res) => {
     res.json({ message: "Password reset successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error resetting password" });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -156,6 +168,18 @@ export const changePassword = async (req, res) => {
   const { email, currentPassword, newPassword } = req.body;
 
   try {
+    if (!email || !currentPassword || !newPassword) {
+      return res
+        .status(400)
+        .json({ message: "Email, current password, and new password are required" });
+    }
+
+    if (currentPassword === newPassword) {
+      return res
+        .status(400)
+        .json({ message: "New password cannot be the same as the current password" });
+    }
+
     const admin = await Admin.findOne({ email });
     if (!admin) {
       return res.status(404).json({ message: "Admin not found" });
@@ -174,6 +198,6 @@ export const changePassword = async (req, res) => {
     res.json({ message: "Password changed successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error changing password" });
+    res.status(500).json({ message: error.message });
   }
 };

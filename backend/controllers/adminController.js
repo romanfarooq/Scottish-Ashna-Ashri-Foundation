@@ -1,9 +1,29 @@
 import crypto from "crypto";
+import passport from "passport";
+import nodemailer from "nodemailer";
 import Admin from "../models/Admin.js";
-import transporter from "../config/nodemailer.js";
 
-export const login = (req, res) => {
-  res.json({ message: "Logged in successfully" });
+export const isLoggedIn = (req, res) => {
+  res.json({ isAuthenticated: req.isAuthenticated() });
+};
+
+export const login = (req, res, next) => {
+  passport.authenticate("local", (err, user, info) => {
+    if (err) {
+      return res.status(500).json({
+        message: "An error occurred during login",
+      });
+    }
+    if (!user) {
+      return res.status(401).json({ message: info?.message });
+    }
+    req.logIn(user, (err) => {
+      if (err) {
+        return res.status(500).json({ message: "Failed to log in" });
+      }
+      return res.json({ message: "Logged in successfully" });
+    });
+  })(req, res, next);
 };
 
 export const logout = (req, res) => {
@@ -11,12 +31,11 @@ export const logout = (req, res) => {
     if (err) {
       return res.status(500).json({ message: "Logout failed" });
     }
-    // Destroy session explicitly
     req.session.destroy((destroyErr) => {
       if (destroyErr) {
         return res.status(500).json({ message: "Failed to destroy session" });
       }
-      res.clearCookie("connect.sid"); // Clear the session cookie
+      res.clearCookie("connect.sid");
       res.json({ message: "Logged out successfully" });
     });
   });
@@ -40,18 +59,64 @@ export const forgotPassword = async (req, res) => {
     admin.otpExpires = otpExpires;
     await admin.save();
 
-    // Send OTP via email
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
-      to: admin.email,
-      subject: "Password Reset OTP",
-      text: `Your OTP for password reset is: ${otp}`,
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 465,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
     });
 
-    res.json({ message: "OTP sent to your email" });
+    // Send OTP via email
+    transporter.sendMail(
+      {
+        from: process.env.EMAIL_FROM,
+        to: admin.email,
+        subject: "Password Reset OTP",
+        text: `Your OTP for password reset is: ${otp}`,
+      },
+      (error, info) => {
+        if (error) {
+          console.error("Error sending OTP:", error);
+          return res.status(500).json({ message: "Error sending OTP" });
+        }
+        res.json({ message: "OTP sent successfully" });
+      }
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error sending OTP" });
+  }
+};
+
+export const verifyOtp = async (req, res) => {
+  const { email, otp } = req.body;
+
+  try {
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    // Check OTP and expiration
+    if (admin.otp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    if (admin.otpExpires < new Date()) {
+      return res.status(400).json({ message: "Expired OTP" });
+    }
+
+    // increase the expiration time of the OTP
+    admin.otpExpires = new Date(Date.now() + 5 * 60 * 1000); // OTP valid for 5 minutes
+
+    // OTP is valid
+    res.json({ message: "OTP verified successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error verifying OTP" });
   }
 };
 
@@ -64,9 +129,14 @@ export const resetPassword = async (req, res) => {
       return res.status(404).json({ message: "Admin not found" });
     }
 
-    // Check OTP and expiration
-    if (admin.otp !== otp || admin.otpExpires < new Date()) {
-      return res.status(400).json({ message: "Invalid or expired OTP" });
+    if (admin.otp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    if (admin.otpExpires < new Date()) {
+      return res
+        .status(400)
+        .json({ message: "Reset Passsword Session Expired" });
     }
 
     // Update the password

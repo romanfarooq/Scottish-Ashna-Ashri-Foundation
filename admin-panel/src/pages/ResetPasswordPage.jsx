@@ -1,6 +1,7 @@
+import toast from "react-hot-toast";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock, Loader2, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -15,16 +16,20 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export function ResetPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { email, otp } = location.state;
 
   const {
+    watch,
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -35,15 +40,31 @@ export function ResetPasswordPage() {
 
   const password = watch("newPassword");
 
-  const onSubmit = async (data) => {
+  const onSubmit = async ({ newPassword }) => {
     try {
       setIsLoading(true);
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log("Password reset successful");
-      navigate("/login");
+      const response = await fetch(`${API_URL}/api/v1/admin/reset-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          otp,
+          email,
+          newPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(data.message);
+        navigate("/login");
+      } else {
+        toast.error(data.message);
+      }
     } catch (err) {
-      console.error(err);
+      toast.error("An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }

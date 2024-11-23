@@ -37,6 +37,7 @@ app.use(passport.session());
 // CORS Configuration
 const adminCors = cors({
   origin: "http://localhost:5173",
+  credentials: true,
 });
 
 const mobileCors = cors({

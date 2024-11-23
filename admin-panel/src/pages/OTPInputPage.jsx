@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -15,6 +16,8 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 export function OTPInputPage() {
   const navigate = useNavigate();
@@ -34,14 +37,30 @@ export function OTPInputPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleComplete = async (value) => {
-    console.log("OTP:", value);
+  const handleComplete = async (otp) => {
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      navigate("/reset-password");
+      const response = await fetch(`${API_URL}/api/v1/admin/verify-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          otp,
+          email,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast.success(result.message);
+        navigate("/reset-password", { state: { email, otp } });
+      } else {
+        toast.error(result.message);
+      }
     } catch (error) {
-      console.error(error);
+      toast.error("An error occurred, please try again.");
     } finally {
       setIsLoading(false);
     }

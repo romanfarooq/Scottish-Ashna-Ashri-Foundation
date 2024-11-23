@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +15,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export function LoginPage() {
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
@@ -30,8 +34,36 @@ export function LoginPage() {
     },
   });
 
-  const handleLogin = (data) => {
-    console.log("Login Data:", data);
+  const email = watch("email");
+
+  const handleLogin = async ({ email, password }) => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${API_URL}/api/v1/admin/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+        credentials: "include",
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast.success(result.message);
+        navigate("/");
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      toast.error("An error occurred during login");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -88,10 +120,6 @@ export function LoginPage() {
                     placeholder="Enter your password"
                     {...register("password", {
                       required: "Password is required",
-                      minLength: {
-                        value: 6,
-                        message: "Password must be at least 6 characters",
-                      },
                     })}
                     className={cn(
                       "pr-10",
@@ -121,7 +149,7 @@ export function LoginPage() {
             </div>
 
             <Button className="w-full transition-colors" type="submit">
-              Sign In
+              {isLoading ? "Logging in..." : "Login"}
             </Button>
           </div>
         </form>
@@ -132,9 +160,7 @@ export function LoginPage() {
           className="h-full p-0 text-sm text-gray-500 hover:text-gray-700"
           onClick={() =>
             navigate("/forgot-password", {
-              state: {
-                email: watch("email"),
-              },
+              state: { email },
             })
           }
         >

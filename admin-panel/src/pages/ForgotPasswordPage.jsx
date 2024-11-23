@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -15,6 +16,8 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export function ForgotPasswordPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -30,13 +33,29 @@ export function ForgotPasswordPage() {
     },
   });
 
-  const onSubmit = async (data) => {
+  const onSubmit = async ({ email }) => {
     try {
       setIsLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log("Password reset email sent to:", data.email);
-      navigate("/otp-input", { state: { email: data.email } });
+      const response = await fetch(`${API_URL}/api/v1/admin/forgot-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast.success(result.message);
+        navigate("/otp-input", { state: { email } });
+      } else {
+        toast.error(result.message);
+      }
     } catch (err) {
+      toast.error("An error occurred, please try again.");
     } finally {
       setIsLoading(false);
     }

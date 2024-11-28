@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { isAuthenticated } from "../middleware/verifyAdmin.js";
+import { isAuthenticatedAdmin } from "../middleware/authMiddleware.js";
 import {
   login,
   logout,
@@ -14,7 +14,7 @@ const router = Router();
 
 router.post("/login", login);
 router.post("/logout", logout);
-router.post("/change-password", isAuthenticated, changePassword);
+router.post("/change-password", isAuthenticatedAdmin, changePassword);
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-otp", verifyOtp);
 router.post("/reset-password", resetPassword);

@@ -5,7 +5,10 @@ import nodemailer from "nodemailer";
 import Admin from "../models/Admin.js";
 
 export const isLoggedIn = (req, res) => {
-  res.json({ isAuthenticated: req.isAuthenticated() });
+  if (req.isAuthenticated() && req.user.role === "admin") {
+    return res.json({ isAuthenticated: true });
+  }
+  res.json({ isAuthenticated: false });
 };
 
 export const login = [
@@ -17,7 +20,7 @@ export const login = [
       return res.status(400).json({ message: errors.array()[0].msg });
     }
 
-    passport.authenticate("local", (err, user, info) => {
+    passport.authenticate("admin-local", (err, user, info) => {
       if (err) {
         return res
           .status(500)
@@ -189,11 +192,9 @@ export const resetPassword = [
 
       const isSamePassword = await admin.isValidPassword(newPassword);
       if (isSamePassword) {
-        return res
-          .status(400)
-          .json({
-            message: "New password cannot be the same as the old password",
-          });
+        return res.status(400).json({
+          message: "New password cannot be the same as the old password",
+        });
       }
 
       // Update the password
@@ -251,11 +252,9 @@ export const changePassword = [
 
       const isSamePassword = await admin.isValidPassword(newPassword);
       if (isSamePassword) {
-        return res
-          .status(400)
-          .json({
-            message: "New password cannot be the same as the old password",
-          });
+        return res.status(400).json({
+          message: "New password cannot be the same as the old password",
+        });
       }
 
       // Update the password

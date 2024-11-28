@@ -25,14 +25,27 @@ app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
+    rolling: true,
     saveUninitialized: false,
     store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
-    // cookie: { secure: true }, // Enable in production
+    cookie: {
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      httpOnly: true, // Protects against XSS
+      secure: process.env.NODE_ENV === "production", // Only use secure cookies in production
+      sameSite: "lax", // Prevents CSRF
+    },
   })
 );
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Middleware to adjust session maxAge based on user role
+app.use((req, res, next) => {
+  if (req.isAuthenticated() && req.user.role === "admin") {
+    req.session.cookie.maxAge = 15 * 60 * 1000; // 15 minutes for Admin
+  }
+  next();
+});
 
 // CORS Configuration
 const adminCors = cors({

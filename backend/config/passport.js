@@ -1,8 +1,11 @@
 import { Strategy as LocalStrategy } from "passport-local";
 import passport from "passport";
 import Admin from "../models/Admin.js";
+import User from "../models/User.js";
 
+// Admin strategy
 passport.use(
+  "admin-local",
   new LocalStrategy(
     { usernameField: "email" },
     async (email, password, done) => {
@@ -25,12 +28,51 @@ passport.use(
   )
 );
 
-passport.serializeUser((admin, done) => done(null, admin.id));
+// User strategy
+passport.use(
+  "user-local",
+  new LocalStrategy(
+    { usernameField: "email" },
+    async (email, password, done) => {
+      try {
+        const user = await User.findOne({ email });
+        if (!user) {
+          return done(null, false, { message: "User not found" });
+        }
 
-passport.deserializeUser(async (id, done) => {
+        const isMatch = await user.isValidPassword(password);
+        if (!isMatch) {
+          return done(null, false, { message: "Invalid credentials" });
+        }
+
+        return done(null, user);
+      } catch (err) {
+        return done(err);
+      }
+    }
+  )
+);
+
+// Serialize and deserialize users based on role
+passport.serializeUser((entity, done) => {
+  console.log("serializeUser", entity);
+  console.log("entity instanceof Admin", entity instanceof Admin);
+  done(null, {
+    id: entity.id,
+    role: entity instanceof Admin ? "admin" : "user",
+  });
+});
+
+passport.deserializeUser(async ({ id, role }, done) => {
+  console.log("deserializeUser", id, role);
   try {
-    const admin = await Admin.findById(id);
-    done(null, admin);
+    const model = role === "admin" ? Admin : User;
+    const entity = await model.findById(id);
+    if (!entity) {
+      return done(new Error(`${role} not found`));
+    }
+    entity.role = role;
+    done(null, entity);
   } catch (err) {
     done(err);
   }

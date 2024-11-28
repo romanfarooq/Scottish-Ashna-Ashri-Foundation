@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Outlet, Navigate } from "react-router-dom";
 import { Loader } from "./Loader";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export function ProtectedRoute({ children }) {
+export function ProtectedRoute() {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
 
   useEffect(() => {
@@ -32,5 +32,5 @@ export function ProtectedRoute({ children }) {
     return <Navigate to="/login" />;
   }
 
-  return children;
+  return <Outlet />;
 }

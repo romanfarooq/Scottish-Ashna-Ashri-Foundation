@@ -55,8 +55,6 @@ passport.use(
 
 // Serialize and deserialize users based on role
 passport.serializeUser((entity, done) => {
-  console.log("serializeUser", entity);
-  console.log("entity instanceof Admin", entity instanceof Admin);
   done(null, {
     id: entity.id,
     role: entity instanceof Admin ? "admin" : "user",
@@ -64,7 +62,6 @@ passport.serializeUser((entity, done) => {
 });
 
 passport.deserializeUser(async ({ id, role }, done) => {
-  console.log("deserializeUser", id, role);
   try {
     const model = role === "admin" ? Admin : User;
     const entity = await model.findById(id);

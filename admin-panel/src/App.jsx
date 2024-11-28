@@ -7,15 +7,17 @@ import { OTPInputPage } from "./pages/OTPInputPage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { HomePage } from "./pages/HomePage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { AdminLayout } from "./layouts/AdminLayout";
 
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: (
-      <ProtectedRoute>
-        <HomePage />
-      </ProtectedRoute>
-    ),
+    element: <ProtectedRoute />,
+    children: [
+      {
+        element: <AdminLayout />,
+        children: [{ path: "/", element: <HomePage /> }],
+      },
+    ],
   },
   {
     element: <LoginLayout />,

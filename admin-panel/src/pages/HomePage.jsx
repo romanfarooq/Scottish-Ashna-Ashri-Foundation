@@ -28,7 +28,7 @@ export function HomePage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center space-y-4">
+    <div className="flex h-full flex-col items-center justify-center space-y-4">
       <h1 className="text-3xl font-bold text-gray-800">
         Welcome to the Admin Panel
       </h1>

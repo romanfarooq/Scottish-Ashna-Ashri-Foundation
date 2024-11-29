@@ -26,11 +26,11 @@ const menuItems = [
     items: [
       {
         title: "Home",
-        url: "#",
+        url: "/",
       },
       {
         title: "About",
-        url: "#",
+        url: "/about",
       },
       {
         title: "Contact",

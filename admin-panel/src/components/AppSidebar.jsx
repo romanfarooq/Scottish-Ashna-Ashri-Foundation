@@ -12,14 +12,13 @@ import {
 } from "lucide-react";
 import { NavMain } from "@/components/NavMain";
 import { NavProjects } from "@/components/NavProjects";
-import { NavUser } from "@/components/NavUser";
-import { TeamSwitcher } from "@/components/TeamSwitcher";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
-  SidebarRail,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
 // This is sample data.
@@ -156,16 +155,30 @@ export function AppSidebar({ ...props }) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg">
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <img
+                  src="/src/assets/images/logo.png"
+                  alt="logo"
+                  className="bg-sidebar hover:bg-sidebar-accent active:bg-sidebar-accent data-[active=true]:bg-sidebar-accent data-[state=open]:hover:bg-sidebar-accent"
+                />
+              </div>
+              <div className="grid flex-1 text-left leading-tight">
+                <span className="truncate text-xs font-semibold">
+                  Scottish Ashna Ashri Foundation
+                </span>
+                <span className="truncate text-[0.6rem]">Admin Panel</span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavProjects projects={data.projects} />
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
-      <SidebarRail />
     </Sidebar>
   );
 }

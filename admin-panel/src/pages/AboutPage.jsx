@@ -24,7 +24,6 @@ export function AboutPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState("");
-  const fileInputRef = useRef(null);
 
   const fetchContent = useCallback(async () => {
     setIsLoading(true);
@@ -68,9 +67,6 @@ export function AboutPage() {
         toast.error("Please upload only .docx files", {
           icon: <FileText size={24} className="text-red-500" />,
         });
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
         setUploadedFileName("");
         return;
       }
@@ -95,9 +91,6 @@ export function AboutPage() {
   };
 
   const clearFile = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
     setUploadedFileName("");
   };
 
@@ -183,7 +176,6 @@ export function AboutPage() {
           <div className="mb-4 flex items-center gap-2">
             <input
               type="file"
-              ref={fileInputRef}
               accept=".docx"
               onChange={handleFileUpload}
               className="hidden"

@@ -11,7 +11,6 @@ import {
   SquareTerminal,
 } from "lucide-react";
 import { NavMain } from "@/components/NavMain";
-import { NavProjects } from "@/components/NavProjects";
 import {
   Sidebar,
   SidebarContent,
@@ -21,135 +20,268 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-// This is sample data.
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+const menuItems = [
+  {
+    label: "Dashboard",
+    items: [
+      {
+        title: "Home",
+        url: "#",
+      },
+      {
+        title: "About",
+        url: "#",
+      },
+      {
+        title: "Contact",
+        url: "#",
+      },
+    ],
   },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
-  navMain: [
-    {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
-};
+  {
+    label: "Islamic Essentials",
+    items: [
+      {
+        title: "Quran",
+        url: "#",
+        items: [
+          {
+            title: "Quran Ayah Wise (Text Format)",
+            url: "#",
+          },
+          {
+            title: "Quran Surah Wise (Book Format)",
+            url: "#",
+          },
+          {
+            title: "Quran Juzz Wise (Book Format)",
+            url: "#",
+          },
+          {
+            title: "Quran Color Coded Tajweed",
+            url: "#",
+          },
+          {
+            title: "Quran Audio",
+            url: "#",
+          },
+        ],
+      },
+      {
+        title: "Ramadan Calendar",
+        url: "#",
+      },
+      {
+        title: "Islamic Calendar",
+        url: "#",
+      },
+      {
+        title: "Azaan/Namaz Alerts",
+        url: "#",
+      },
+      {
+        title: "Iftar/Sehar Alerts",
+        url: "#",
+      },
+      {
+        title: "Qibla Finder",
+        url: "#",
+      },
+      {
+        title: "Dua’s",
+        url: "#",
+      },
+      {
+        title: "Ziaraah",
+        url: "#",
+      },
+      {
+        title: "Salat",
+        url: "#",
+      },
+      {
+        title: "Taqibaat",
+        url: "#",
+      },
+      {
+        title: "Amal",
+        url: "#",
+      },
+      {
+        title: "Sahifa Sajjadia",
+        url: "#",
+      },
+      {
+        title: "Hajj & Ziaraah",
+        url: "#",
+      },
+      {
+        title: "Specific Dua’s",
+        url: "#",
+      },
+      {
+        title: "Ghusul Instructions",
+        url: "#",
+      },
+      {
+        title: "Faruh u Deen",
+        url: "#",
+      },
+      {
+        title: "Asool e Deen",
+        url: "#",
+      },
+    ],
+  },
+  {
+    label: "Books & Resources",
+    items: [
+      {
+        title: "Nahj al-Balagha",
+        url: "#",
+      },
+      {
+        title: "Kitab al-Kafi",
+        url: "#",
+      },
+      {
+        title: "Sermons",
+        url: "#",
+      },
+      {
+        title: "Hadith Directory",
+        url: "#",
+      },
+      {
+        title: "Book Library",
+        url: "#",
+      },
+      {
+        title: "Kids Library",
+        url: "#",
+      },
+    ],
+  },
+  {
+    label: "Community Engagement",
+    items: [
+      {
+        title: "Sunday School Fund",
+        url: "#",
+      },
+      {
+        title: "Sports and Recreation",
+        url: "#",
+      },
+      {
+        title: "Movie Club (Once a Week)",
+        url: "#",
+      },
+      {
+        title: "Engagements with Local Community and Politicians",
+        url: "#",
+      },
+      {
+        title: "Health Club",
+        url: "#",
+      },
+      {
+        title: "A Code of Practice While Living in the West",
+        url: "#",
+      },
+    ],
+  },
+  {
+    label: "Donations",
+    items: [
+      {
+        title: "Make Donations",
+        url: "#",
+      },
+      {
+        title: "Khums Fund Pay",
+        url: "#",
+      },
+      {
+        title: "Sadiqa Fund Pay",
+        url: "#",
+      },
+      {
+        title: "General Fund",
+        url: "#",
+      },
+      {
+        title: "Ramadan or Muharram Fund",
+        url: "#",
+      },
+      {
+        title: "Death Committee for All Shia Asna Ashir Community",
+        url: "#",
+      },
+    ],
+  },
+  {
+    label: "Interactive Features",
+    items: [
+      {
+        title: "Tasbeeh Counter",
+        url: "#",
+      },
+      {
+        title: "Daily Quiz",
+        url: "#",
+      },
+      {
+        title: "In-App Notifications",
+        url: "#",
+        items: [
+          {
+            title: "Azaan/Namaz Alerts",
+            url: "#",
+          },
+          {
+            title: "Iftar/Sehar Alerts",
+            url: "#",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    label: "Press & Media",
+    items: [
+      {
+        title: "Press Release",
+        url: "#",
+      },
+      {
+        title: "Announcement",
+        url: "#",
+      },
+      {
+        title: "Media",
+        url: "#",
+      },
+    ],
+  },
+  {
+    label: "Downloads",
+    items: [
+      {
+        title: "Downloads",
+        url: "#",
+      },
+      {
+        title: "Islamic Calendar",
+        url: "#",
+      },
+      {
+        title: "Full Digital Version of Quran",
+        url: "#",
+      },
+    ],
+  },
+];
 
 export function AppSidebar({ ...props }) {
   return (
@@ -166,18 +298,17 @@ export function AppSidebar({ ...props }) {
                 />
               </div>
               <div className="grid flex-1 text-left leading-tight">
-                <span className="truncate text-xs font-semibold">
+                <span className="truncate font-semibold">
                   Scottish Ashna Ashri Foundation
                 </span>
-                <span className="truncate text-[0.6rem]">Admin Panel</span>
+                <span className="truncate text-xs">Admin Panel</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavMain menuItems={menuItems} />
       </SidebarContent>
     </Sidebar>
   );

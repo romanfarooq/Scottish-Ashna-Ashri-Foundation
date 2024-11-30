@@ -1,12 +1,15 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
-const AdminSchema = new mongoose.Schema({
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  otp: { type: String },
-  otpExpires: { type: Date },
-});
+const AdminSchema = new mongoose.Schema(
+  {
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    otp: { type: String },
+    otpExpires: { type: Date },
+  },
+  { timestamps: true }
+);
 
 // Hash password before saving
 AdminSchema.pre("save", async function (next) {

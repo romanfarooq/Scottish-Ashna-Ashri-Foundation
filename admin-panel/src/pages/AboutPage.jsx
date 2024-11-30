@@ -2,7 +2,7 @@ import toast from "react-hot-toast";
 import mammoth from "mammoth";
 import ReactQuill, { Quill } from "react-quill-new";
 import { SnowTheme } from "quill-color-picker-enhance";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Save,
   RefreshCw,
@@ -125,9 +125,8 @@ export function AboutPage() {
     toolbar: [
       [{ header: [1, 2, 3, 4, 5, 6, false] }], // Headers
       [{ size: ["small", false, "large", "huge"] }], // Font sizes
-      [{ font: [] }], // Font families
       ["bold", "italic", "underline", "strike"], // Text formatting
-      [{ color: [] }], // Text color and background
+      [{ color: [] }, { background: [] }], // Text color and background
       [{ script: "sub" }, { script: "super" }], // Subscript and superscript
       [{ list: "ordered" }, { list: "bullet" }], // Lists
       [{ indent: "-1" }, { indent: "+1" }], // Indentation
@@ -139,7 +138,6 @@ export function AboutPage() {
 
   const formats = [
     "header", // Headers
-    "font", // Font family
     "size", // Font size
     "bold",
     "italic",

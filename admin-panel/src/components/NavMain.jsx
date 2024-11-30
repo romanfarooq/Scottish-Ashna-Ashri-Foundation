@@ -57,6 +57,7 @@ export function NavMain({ menuItems }) {
                           <SidebarMenuSubItem key={subItem.title}>
                             <SidebarMenuSubButton asChild>
                               <Link to={subItem.url}>
+                                {subItem.icon && <subItem.icon />}
                                 <span className="text-xs">{subItem.title}</span>
                               </Link>
                             </SidebarMenuSubButton>

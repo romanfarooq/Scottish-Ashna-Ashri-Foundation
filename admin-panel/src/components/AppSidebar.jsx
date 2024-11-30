@@ -3,13 +3,18 @@ import {
   BookOpen,
   Bot,
   Command,
+  Contact,
   Frame,
   GalleryVerticalEnd,
+  Home,
+  Info,
   Map,
   PieChart,
   Settings2,
   SquareTerminal,
 } from "lucide-react";
+import { Book, FileText, AudioLines, Palette, ListTree, ChevronDown } from 'lucide-react';
+
 import { NavMain } from "@/components/NavMain";
 import {
   Sidebar,
@@ -27,14 +32,17 @@ const menuItems = [
       {
         title: "Home",
         url: "/",
+        icon: Home,
       },
       {
         title: "About",
         url: "/about",
+        icon: Info,
       },
       {
         title: "Contact",
-        url: "#",
+        url: "/",
+        icon: Contact,
       },
     ],
   },
@@ -44,29 +52,35 @@ const menuItems = [
       {
         title: "Quran",
         url: "#",
+        icon: Book,
         items: [
           {
             title: "Quran Ayah Wise (Text Format)",
             url: "#",
+            icon: FileText,
           },
           {
             title: "Quran Surah Wise (Book Format)",
             url: "#",
+            icon: ListTree,
           },
           {
             title: "Quran Juzz Wise (Book Format)",
             url: "#",
+            icon: ListTree,
           },
           {
             title: "Quran Color Coded Tajweed",
             url: "#",
+            icon: Palette,
           },
           {
             title: "Quran Audio",
             url: "#",
+            icon: AudioLines,
           },
         ],
-      },
+      }, 
       {
         title: "Ramadan Calendar",
         url: "#",

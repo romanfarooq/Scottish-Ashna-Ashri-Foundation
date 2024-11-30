@@ -9,6 +9,7 @@ import { HomePage } from "./pages/HomePage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminLayout } from "./layouts/AdminLayout";
 import { AboutPage } from "./pages/AboutPage";
+import { QuranTextPage } from "./pages/QuranTextPage";
 
 const router = createBrowserRouter([
   {
@@ -21,6 +22,10 @@ const router = createBrowserRouter([
           {
             path: "about",
             element: <AboutPage />,
+          },
+          {
+            path: "quran-text",
+            element: <QuranTextPage />,
           },
         ],
       },

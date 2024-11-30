@@ -13,7 +13,14 @@ import {
   Settings2,
   SquareTerminal,
 } from "lucide-react";
-import { Book, FileText, AudioLines, Palette, ListTree, ChevronDown } from 'lucide-react';
+import {
+  Book,
+  FileText,
+  AudioLines,
+  Palette,
+  ListTree,
+  ChevronDown,
+} from "lucide-react";
 
 import { NavMain } from "@/components/NavMain";
 import {
@@ -51,12 +58,11 @@ const menuItems = [
     items: [
       {
         title: "Quran",
-        url: "#",
         icon: Book,
         items: [
           {
             title: "Quran Ayah Wise (Text Format)",
-            url: "#",
+            url: "/quran-text",
             icon: FileText,
           },
           {
@@ -80,7 +86,7 @@ const menuItems = [
             icon: AudioLines,
           },
         ],
-      }, 
+      },
       {
         title: "Ramadan Calendar",
         url: "#",

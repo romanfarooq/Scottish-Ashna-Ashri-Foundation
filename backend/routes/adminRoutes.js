@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { isAuthenticatedAdmin } from "../middleware/authMiddleware.js";
+import { getAbout, updateAbout } from "../controllers/aboutController.js";
 import {
   login,
   logout,
@@ -9,7 +10,13 @@ import {
   isLoggedIn,
   verifyOtp,
 } from "../controllers/adminController.js";
-import { getAbout, updateAbout } from "../controllers/aboutController.js";
+import {
+  addSurah,
+  deleteSurah,
+  getAllSurahs,
+  getSurahByNumber,
+  updateSurah,
+} from "../controllers/surahController.js";
 
 const router = Router();
 
@@ -23,5 +30,11 @@ router.get("/is-authenticated", isLoggedIn);
 
 router.get("/about", isAuthenticatedAdmin, getAbout);
 router.post("/about", isAuthenticatedAdmin, updateAbout);
+
+router.get("/surahs", isAuthenticatedAdmin, getAllSurahs);
+router.get("/surahs/:surahNumber", isAuthenticatedAdmin, getSurahByNumber);
+router.post("/surahs", isAuthenticatedAdmin, addSurah);
+router.put("/surahs/:surahNumber", isAuthenticatedAdmin, updateSurah);
+router.delete("/surahs/:surahNumber", isAuthenticatedAdmin, deleteSurah);
 
 export default router;

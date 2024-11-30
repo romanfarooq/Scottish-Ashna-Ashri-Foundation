@@ -1,14 +1,15 @@
 import mongoose from "mongoose";
 
 const AyahSchema = new mongoose.Schema({
-  ayahNumber: Number,
-  text: String,
+  ayahNumber: { type: Number, required: true },
+  text: { type: String, required: true },
 });
 
 const SurahSchema = new mongoose.Schema({
-  surahNumber: Number,
-  name: String,
-  englishName: String,
+  surahNumber: { type: Number, required: true },
+  name: { type: String, required: true },
+  englishName: { type: String, required: true },
+  meaning: { type: String, required: true },
   ayat: [AyahSchema],
 });
 

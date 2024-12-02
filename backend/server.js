@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import session from "express-session";
 import MongoStore from "connect-mongo";
 import rateLimit from "express-rate-limit";
@@ -9,8 +8,6 @@ import connectDB from "./config/db.js";
 import passport from "./config/passport.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import mobileRoutes from "./routes/mobileRoutes.js";
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;

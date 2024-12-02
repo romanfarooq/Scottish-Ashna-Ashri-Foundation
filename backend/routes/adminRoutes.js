@@ -11,10 +11,12 @@ import {
   verifyOtp,
 } from "../controllers/adminController.js";
 import {
+  addAudio,
   addAyah,
   addSurah,
   deleteSurah,
   getAllSurahs,
+  getAudio,
   getSurahByNumber,
   updateSurah,
 } from "../controllers/surahController.js";
@@ -38,5 +40,7 @@ router.post("/surahs", isAuthenticatedAdmin, addSurah);
 router.put("/surahs/:surahNumber", isAuthenticatedAdmin, updateSurah);
 router.delete("/surahs/:surahNumber", isAuthenticatedAdmin, deleteSurah);
 router.post("/surahs/:surahNumber/ayat", isAuthenticatedAdmin, addAyah);
+router.put("/surahs/:surahNumber/ayat/:ayahNumber/audio", isAuthenticatedAdmin, addAudio);
+router.get("/surahs/:surahNumber/ayat/:ayahNumber/audio", isAuthenticatedAdmin, getAudio);
 
 export default router;

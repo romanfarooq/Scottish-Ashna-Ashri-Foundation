@@ -1,7 +1,7 @@
 import { body, validationResult } from "express-validator";
 import crypto from "crypto";
 import passport from "passport";
-import nodemailer from "nodemailer";
+import transporter from "../config/nodemailer.js";
 import Admin from "../models/Admin.js";
 
 export const isLoggedIn = (req, res) => {
@@ -78,16 +78,6 @@ export const forgotPassword = [
       admin.otp = otp;
       admin.otpExpires = otpExpires;
       await admin.save();
-
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        host: "smtp.gmail.com",
-        port: 465,
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
 
       // Send OTP via email
       transporter.sendMail(

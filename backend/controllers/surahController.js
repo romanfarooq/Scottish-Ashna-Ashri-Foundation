@@ -1,5 +1,7 @@
 import Surah from "../models/Surah.js";
+import upload from "../config/upload.js";
 
+import mongoose from "mongoose";
 import { body, param, validationResult } from "express-validator";
 
 export const validateSurahNumber = [
@@ -67,6 +69,30 @@ export const validateAddorUpdateAyah = [
     }),
 ];
 
+export const validateAddAudio = [
+  param("surahNumber")
+    .isInt({ gt: 0 })
+    .withMessage("Surah number must be a positive integer."),
+  param("ayahNumber")
+    .isInt({ gt: 0 })
+    .withMessage("Ayah number must be a positive integer."),
+  body("audio").custom((value, { req }) => {
+    if (!req.file) {
+      throw new Error("No file uploaded.");
+    }
+    return true;
+  }),
+];
+
+export const validateGetAudio = [
+  param("surahNumber")
+    .isInt({ gt: 0 })
+    .withMessage("Surah number must be a positive integer."),
+  param("ayahNumber")
+    .isInt({ gt: 0 })
+    .withMessage("Ayah number must be a positive integer."),
+];
+
 // Middleware to handle validation errors
 export const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
@@ -114,7 +140,6 @@ export const addSurah = [
   async (req, res) => {
     const { surahNumber, name, englishName, meaning, ayat } = req.body;
     try {
-
       if (await Surah.exists({ surahNumber })) {
         return res.status(400).json({ message: "Surah already exists." });
       }
@@ -196,6 +221,76 @@ export const addAyah = [
       res.status(201).json({ message: "Ayah added successfully." });
     } catch (error) {
       res.status(500).json({ message: "Failed to add Ayah." });
+    }
+  },
+];
+
+export const addAudio = [
+  validateAddAudio,
+  handleValidationErrors,
+  upload.single("audio"),
+  async (req, res) => {
+    try {
+      const { surahNumber, ayahNumber } = req.params;
+      const file = req.file;
+
+      if (!file) {
+        return res.status(400).json({ message: "No file uploaded." });
+      }
+
+      // Save the file ID in the ayah's audioFileId
+      const surah = await Surah.findOne({ surahNumber });
+      if (!surah) {
+        return res.status(404).json({ message: "Surah not found." });
+      }
+
+      const ayah = surah.ayat.find((a) => a.ayahNumber === Number(ayahNumber));
+      if (!ayah) {
+        return res.status(404).json({ message: "Ayah not found." });
+      }
+
+      ayah.audioFileId = file.id; // Save the file's GridFS ID
+      await surah.save();
+
+      res
+        .status(200)
+        .json({ message: "Audio uploaded and linked successfully." });
+    } catch (error) {
+      res.status(500).json({ message: "Audio upload failed." });
+    }
+  },
+];
+
+export const getAudio = [
+  validateGetAudio,
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const { surahNumber, ayahNumber } = req.params;
+
+      // Find the Surah and Ayah
+      const surah = await Surah.findOne({ surahNumber });
+      if (!surah) {
+        return res.status(404).json({ message: "Surah not found." });
+      }
+
+      const ayah = surah.ayat.find((a) => a.ayahNumber === Number(ayahNumber));
+      if (!ayah || !ayah.audioFileId) {
+        return res
+          .status(404)
+          .json({ message: "Audio not found for this ayah." });
+      }
+
+      // Fetch and stream the audio file from GridFS
+      const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+        bucketName: "audio",
+      });
+      const downloadStream = bucket.openDownloadStream(ayah.audioFileId);
+
+      res.set("Content-Type", "audio/mpeg"); // Ensure the correct MIME type
+      downloadStream.pipe(res);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to stream audio." });
     }
   },
 ];

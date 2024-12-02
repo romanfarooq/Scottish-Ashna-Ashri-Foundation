@@ -1,7 +1,7 @@
 import toast from "react-hot-toast";
-import { Loader2, Download, Upload } from "lucide-react";
+import { Loader2, Download, Upload, Play, Pause } from "lucide-react";
 import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,10 @@ export function SurahTextPage() {
   const [surah, setSurah] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploadLoading, setUploadLoading] = useState(false);
+  const [playingAyah, setPlayingAyah] = useState(null);
+  const audioRefs = useRef({});
+  const jsonUploadRef = useRef(null);
+  const audioUploadRefs = useRef({});
 
   useEffect(() => {
     const fetchSurah = async () => {
@@ -48,24 +52,19 @@ export function SurahTextPage() {
   const handleExportJSON = () => {
     if (!surah) return;
 
-    //  Create a blob with the JSON data
     const jsonString = JSON.stringify(surah, null, 2);
     const blob = new Blob([jsonString], { type: "application/json" });
 
-    //  Create a link element and trigger download
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = `Surah_${surah.surahNumber}.json`;
 
-    //  Append to body, click, and remove
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    //  Free up memory
     URL.revokeObjectURL(link.href);
 
-    //  Show a success toast
     toast.success(`Exported ${surah.name} as JSON`);
   };
 
@@ -73,7 +72,6 @@ export function SurahTextPage() {
     const file = event.target.files[0];
     if (!file) return;
 
-    //  Check file type
     if (file.type !== "application/json") {
       toast.error("Please upload a JSON file");
       return;
@@ -82,19 +80,16 @@ export function SurahTextPage() {
     try {
       setUploadLoading(true);
 
-      //  Read file content
       const fileReader = new FileReader();
       fileReader.onload = async (e) => {
         try {
           const jsonData = JSON.parse(e.target.result);
 
-          //  Validate JSON structure
           if (!jsonData.surahNumber || !jsonData.name || !jsonData.ayat) {
             toast.error("Invalid JSON format");
             return;
           }
 
-          //  Send update request
           const response = await fetch(
             `${API_URL}/api/v1/admin/surahs/${surahNumber}/ayat`,
             {
@@ -128,13 +123,16 @@ export function SurahTextPage() {
     }
   };
 
-  const handleAudioUpload = async (ayahNumber, file) => {
+  const handleAudioUpload = async (ayahNumber, event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
     const formData = new FormData();
     formData.append("audio", file);
 
     try {
       const response = await fetch(
-        `${API_URL}/api/v1/admin/surahs/${surahNumber}/ayah/${ayahNumber}/audio`,
+        `${API_URL}/api/v1/admin/surahs/${surahNumber}/ayat/${ayahNumber}/audio`,
         {
           method: "POST",
           credentials: "include",
@@ -154,12 +152,42 @@ export function SurahTextPage() {
   };
 
   const playAudio = async (ayahNumber) => {
+    // Pause any currently playing audio
+    if (playingAyah && audioRefs.current[playingAyah]) {
+      audioRefs.current[playingAyah].pause();
+      audioRefs.current[playingAyah].currentTime = 0;
+    }
+
+    // If clicking the same ayah, just stop
+    if (playingAyah === ayahNumber) {
+      setPlayingAyah(null);
+      return;
+    }
+
     try {
-      const audioUrl = `${API_URL}/api/v1/admin/surahs/${surahNumber}/ayah/${ayahNumber}/audio`;
-      const audio = new Audio(audioUrl);
-      audio.play();
+      const audioUrl = `${API_URL}/api/v1/admin/surahs/${surahNumber}/ayat/${ayahNumber}/audio`;
+
+      // Create audio element if it doesn't exist
+      if (!audioRefs.current[ayahNumber]) {
+        const audio = new Audio(audioUrl);
+        audioRefs.current[ayahNumber] = audio;
+
+        audio.addEventListener("ended", () => {
+          setPlayingAyah(null);
+        });
+      }
+
+      await audioRefs.current[ayahNumber].play();
+      setPlayingAyah(ayahNumber);
     } catch (error) {
       toast.error("Failed to play audio.");
+    }
+  };
+
+  const pauseAudio = (ayahNumber) => {
+    if (audioRefs.current[ayahNumber]) {
+      audioRefs.current[ayahNumber].pause();
+      setPlayingAyah(null);
     }
   };
 
@@ -191,13 +219,13 @@ export function SurahTextPage() {
                 type="file"
                 accept=".json"
                 className="hidden"
-                id="jsonUpload"
+                ref={jsonUploadRef}
                 onChange={handleFileUpload}
                 disabled={uploadLoading}
               />
               <Button
                 variant="outline"
-                onClick={() => document.getElementById("jsonUpload").click()}
+                onClick={() => jsonUploadRef.current?.click()}
                 disabled={uploadLoading}
               >
                 {uploadLoading ? (
@@ -214,12 +242,55 @@ export function SurahTextPage() {
           <Separator className="my-4" />
           <div className="space-y-4">
             {surah.ayat.map((ayah) => (
-              <div key={ayah.ayahNumber} className="flex items-center">
-                <div className="font-arabic ml-auto text-right text-xl leading-loose rtl:text-right">
-                  {ayah.text}
-                  <span className="ml-2 text-sm text-muted-foreground">
-                    ({ayah.ayahNumber})
-                  </span>
+              <div
+                key={ayah.ayahNumber}
+                className="flex items-center justify-between space-x-4"
+              >
+                <div className="flex-grow">
+                  <div className="font-arabic text-right text-xl leading-loose rtl:text-right">
+                    {ayah.text}
+                    <span className="ml-2 text-sm text-muted-foreground">
+                      ({ayah.ayahNumber})
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Input
+                    type="file"
+                    accept="audio/*"
+                    className="hidden"
+                    ref={(el) => {
+                      audioUploadRefs.current[ayah.ayahNumber] = el;
+                    }}
+                    onChange={(e) => handleAudioUpload(ayah.ayahNumber, e)}
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() =>
+                      audioUploadRefs.current[ayah.ayahNumber]?.click()
+                    }
+                  >
+                    <Upload className="h-4 w-4" />
+                  </Button>
+                  {playingAyah === ayah.ayahNumber ? (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => pauseAudio(ayah.ayahNumber)}
+                    >
+                      <Pause className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      disabled={!ayah.audioFileId}
+                      onClick={() => playAudio(ayah.ayahNumber)}
+                    >
+                      <Play className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}

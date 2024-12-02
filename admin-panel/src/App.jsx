@@ -1,15 +1,16 @@
 import { Toaster } from "react-hot-toast";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { LoginLayout } from "./layouts/LoginLayout";
-import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
-import { LoginPage } from "./pages/LoginPage";
-import { OTPInputPage } from "./pages/OTPInputPage";
-import { ResetPasswordPage } from "./pages/ResetPasswordPage";
-import { HomePage } from "./pages/HomePage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminLayout } from "./layouts/AdminLayout";
+import { LoginLayout } from "./layouts/LoginLayout";
 import { AboutPage } from "./pages/AboutPage";
+import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
+import { HomePage } from "./pages/HomePage";
+import { LoginPage } from "./pages/LoginPage";
+import { OTPInputPage } from "./pages/OTPInputPage";
 import { QuranTextPage } from "./pages/QuranTextPage";
+import { ResetPasswordPage } from "./pages/ResetPasswordPage";
+import { SurahTextPage } from "./pages/SurahTextPage";
 
 const router = createBrowserRouter([
   {
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
           {
             path: "quran-text",
             element: <QuranTextPage />,
+          },
+          {
+            path: "surah-text/:surahNumber",
+            element: <SurahTextPage />,
           },
         ],
       },

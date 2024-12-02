@@ -11,6 +11,7 @@ import {
   verifyOtp,
 } from "../controllers/adminController.js";
 import {
+  addAyah,
   addSurah,
   deleteSurah,
   getAllSurahs,
@@ -36,5 +37,6 @@ router.get("/surahs/:surahNumber", isAuthenticatedAdmin, getSurahByNumber);
 router.post("/surahs", isAuthenticatedAdmin, addSurah);
 router.put("/surahs/:surahNumber", isAuthenticatedAdmin, updateSurah);
 router.delete("/surahs/:surahNumber", isAuthenticatedAdmin, deleteSurah);
+router.post("/surahs/:surahNumber/ayat", isAuthenticatedAdmin, addAyah);
 
 export default router;

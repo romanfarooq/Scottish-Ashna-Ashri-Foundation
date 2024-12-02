@@ -49,16 +49,16 @@ export function QuranTextPage() {
         toast.error(data.message);
       }
       setSurahs(data.surahs);
-      setLoading(false);
     } catch (error) {
       toast.error("Failed to load Surahs");
+    } finally {
       setLoading(false);
     }
   }, []);
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex h-full flex-col items-center justify-center">
         <Loader2 className="h-16 w-16 animate-spin text-blue-500" />
         <p className="ml-4 text-lg font-semibold">Loading Surahs...</p>
       </div>
@@ -67,7 +67,7 @@ export function QuranTextPage() {
 
   // Navigation to Ayat Page
   const navigateToAyat = (surah) => {
-    navigate(`/ayat/${surah.surahNumber}`);
+    navigate(`/surah-text/${surah.surahNumber}`);
   };
 
   // Add Surah Dialog Component
@@ -233,7 +233,6 @@ export function QuranTextPage() {
         );
 
         const result = await response.json();
-
         if (response.ok) {
           fetchSurahs(); // Refresh the list
           toast.success(result.message);
@@ -312,7 +311,6 @@ export function QuranTextPage() {
             <TableHead>Arabic Name</TableHead>
             <TableHead>English Name</TableHead>
             <TableHead>Meaning</TableHead>
-            <TableHead>Total Ayat</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -323,7 +321,6 @@ export function QuranTextPage() {
               <TableCell>{surah.name || "N/A"}</TableCell>
               <TableCell>{surah.englishName || "N/A"}</TableCell>
               <TableCell>{surah.meaning || "N/A"}</TableCell>
-              <TableCell>{surah.totalAyat || "N/A"}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
                   <Button

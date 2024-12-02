@@ -114,6 +114,11 @@ export const addSurah = [
   async (req, res) => {
     const { surahNumber, name, englishName, meaning, ayat } = req.body;
     try {
+
+      if (await Surah.exists({ surahNumber })) {
+        return res.status(400).json({ message: "Surah already exists." });
+      }
+
       const newSurah = new Surah({
         surahNumber,
         name,
@@ -182,7 +187,8 @@ export const addAyah = [
     try {
       const surah = await Surah.findOneAndUpdate(
         { surahNumber: parseInt(surahNumber, 10) },
-        { $push: { ayat: { $each: ayat } } }
+        { $set: { ayat } },
+        { new: true }
       );
       if (!surah) {
         return res.status(404).json({ message: "Surah not found." });

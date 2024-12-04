@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const AyahSchema = new mongoose.Schema({
   ayahNumber: { type: Number, required: true },
   text: { type: String, required: true },
-  audioFileId: { type: mongoose.Schema.Types.ObjectId },
+  audioFileId: { type: mongoose.Schema.Types.ObjectId, ref: "audio.files" },
 });
 
 const SurahSchema = new mongoose.Schema({

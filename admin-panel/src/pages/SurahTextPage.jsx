@@ -1,7 +1,7 @@
 import toast from "react-hot-toast";
 import { Loader2, Download, Upload, Play, Pause } from "lucide-react";
 import { useParams } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -19,35 +19,35 @@ export function SurahTextPage() {
   const jsonUploadRef = useRef(null);
   const audioUploadRefs = useRef({});
 
-  useEffect(() => {
-    const fetchSurah = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(
-          `${API_URL}/api/v1/admin/surahs/${surahNumber}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
+  const fetchSurah = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `${API_URL}/api/v1/admin/surahs/${surahNumber}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
-        const data = await response.json();
-        if (response.ok) {
-          setSurah(data.surah);
-        } else {
-          toast.error(data.message);
-        }
-      } catch (err) {
-        toast.error("Failed to fetch Surah.");
-      } finally {
-        setLoading(false);
+          credentials: "include",
+        },
+      );
+      const data = await response.json();
+      if (response.ok) {
+        setSurah(data.surah);
+      } else {
+        toast.error(data.message);
       }
-    };
-
-    fetchSurah();
+    } catch (err) {
+      toast.error("Failed to fetch Surah.");
+    } finally {
+      setLoading(false);
+    }
   }, [surahNumber]);
+
+  useEffect(() => {
+    fetchSurah();
+  }, []);
 
   const handleExportJSON = () => {
     if (!surah) return;
@@ -106,7 +106,7 @@ export function SurahTextPage() {
 
           if (response.ok) {
             toast.success("Surah updated successfully");
-            setSurah(jsonData);
+            fetchSurah();
           } else {
             toast.error(responseData.message || "Failed to update Surah");
           }
@@ -143,6 +143,7 @@ export function SurahTextPage() {
       const data = await response.json();
       if (response.ok) {
         toast.success("Audio uploaded successfully!");
+        fetchSurah();
       } else {
         toast.error(data.message || "Failed to upload audio.");
       }

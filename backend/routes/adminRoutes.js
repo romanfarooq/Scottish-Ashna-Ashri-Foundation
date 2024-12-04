@@ -1,3 +1,4 @@
+import upload from "../config/upload.js";
 import { Router } from "express";
 import { isAuthenticatedAdmin } from "../middleware/authMiddleware.js";
 import { getAbout, updateAbout } from "../controllers/aboutController.js";
@@ -40,7 +41,17 @@ router.post("/surahs", isAuthenticatedAdmin, addSurah);
 router.put("/surahs/:surahNumber", isAuthenticatedAdmin, updateSurah);
 router.delete("/surahs/:surahNumber", isAuthenticatedAdmin, deleteSurah);
 router.post("/surahs/:surahNumber/ayat", isAuthenticatedAdmin, addAyah);
-router.post("/surahs/:surahNumber/ayat/:ayahNumber/audio", isAuthenticatedAdmin, addAudio);
-router.get("/surahs/:surahNumber/ayat/:ayahNumber/audio", isAuthenticatedAdmin, getAudio);
+router.post(
+  "/surahs/:surahNumber/ayat/:ayahNumber/audio",
+  isAuthenticatedAdmin,
+  upload.single("audio"),
+  addAudio
+);
+
+router.get(
+  "/surahs/:surahNumber/ayat/:ayahNumber/audio",
+  isAuthenticatedAdmin,
+  getAudio
+);
 
 export default router;

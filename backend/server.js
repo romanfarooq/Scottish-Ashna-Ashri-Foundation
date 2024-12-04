@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
 import session from "express-session";
 import MongoStore from "connect-mongo";
 import rateLimit from "express-rate-limit";
@@ -16,6 +17,7 @@ const PORT = process.env.PORT || 3000;
 connectDB();
 
 // Middleware
+app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(

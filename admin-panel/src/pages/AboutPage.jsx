@@ -1,7 +1,6 @@
 import toast from "react-hot-toast";
 import mammoth from "mammoth";
-import ReactQuill, { Quill } from "react-quill-new";
-import { SnowTheme } from "quill-color-picker-enhance";
+import ReactQuill from "react-quill-new";
 import { useState, useEffect, useCallback } from "react";
 import {
   Save,
@@ -12,9 +11,6 @@ import {
   Trash2,
 } from "lucide-react";
 import "react-quill-new/dist/quill.snow.css";
-import "quill-color-picker-enhance/dist/index.css";
-
-Quill.register("themes/snow-quill-color-picker-enhance", SnowTheme);
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -203,7 +199,7 @@ export function AboutPage() {
           <ReactQuill
             value={editorValue}
             onChange={handleChange}
-            theme="snow-quill-color-picker-enhance"
+            theme="snow"
             modules={modules}
             formats={formats}
             className="mb-4 rounded-md border"

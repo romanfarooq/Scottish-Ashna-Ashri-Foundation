@@ -1,7 +1,6 @@
 import Surah from "../models/Surah.js";
-import upload from "../config/upload.js";
-
-import mongoose from "mongoose";
+import { gfs } from "../config/db.js";
+import mongoose, { Types } from "mongoose";
 import { body, param, validationResult } from "express-validator";
 
 export const validateSurahNumber = [
@@ -93,7 +92,6 @@ export const validateGetAudio = [
     .withMessage("Ayah number must be a positive integer."),
 ];
 
-// Middleware to handle validation errors
 export const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -102,7 +100,6 @@ export const handleValidationErrors = (req, res, next) => {
   next();
 };
 
-// Get all Surahs
 export const getAllSurahs = async (req, res) => {
   try {
     const surahs = await Surah.find({}, { _id: 0, __v: 0, ayat: 0 });
@@ -187,8 +184,8 @@ export const deleteSurah = [
   validateSurahNumber,
   handleValidationErrors,
   async (req, res) => {
-    const { surahNumber } = req.params;
     try {
+      const { surahNumber } = req.params;
       const surah = await Surah.findOneAndDelete({
         surahNumber: parseInt(surahNumber, 10),
       });
@@ -228,29 +225,21 @@ export const addAyah = [
 export const addAudio = [
   validateAddAudio,
   handleValidationErrors,
-  upload.single("audio"),
   async (req, res) => {
+    const { file } = req;
+    const { surahNumber, ayahNumber } = req.params;
     try {
-      const { surahNumber, ayahNumber } = req.params;
-      const file = req.file;
+      const updatedSurah = await Surah.findOneAndUpdate(
+        { surahNumber, "ayat.ayahNumber": Number(ayahNumber) },
+        { $set: { "ayat.$.audioFileId": new mongoose.Types.ObjectId(file.id) } },
+        { new: true }
+      );
 
-      if (!file) {
-        return res.status(400).json({ message: "No file uploaded." });
+      if (!updatedSurah) {
+        return res
+          .status(404)
+          .json({ message: "Failed to update Surah or Ayah not found." });
       }
-
-      // Save the file ID in the ayah's audioFileId
-      const surah = await Surah.findOne({ surahNumber });
-      if (!surah) {
-        return res.status(404).json({ message: "Surah not found." });
-      }
-
-      const ayah = surah.ayat.find((a) => a.ayahNumber === Number(ayahNumber));
-      if (!ayah) {
-        return res.status(404).json({ message: "Ayah not found." });
-      }
-
-      ayah.audioFileId = file.id; // Save the file's GridFS ID
-      await surah.save();
 
       res
         .status(200)
@@ -265,10 +254,8 @@ export const getAudio = [
   validateGetAudio,
   handleValidationErrors,
   async (req, res) => {
+    const { surahNumber, ayahNumber } = req.params;
     try {
-      const { surahNumber, ayahNumber } = req.params;
-
-      // Find the Surah and Ayah
       const surah = await Surah.findOne({ surahNumber });
       if (!surah) {
         return res.status(404).json({ message: "Surah not found." });
@@ -281,11 +268,7 @@ export const getAudio = [
           .json({ message: "Audio not found for this ayah." });
       }
 
-      // Fetch and stream the audio file from GridFS
-      const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-        bucketName: "audio",
-      });
-      const downloadStream = bucket.openDownloadStream(ayah.audioFileId);
+      const downloadStream = gfs.openDownloadStream(ayah.audioFileId);
 
       res.set("Content-Type", "audio/mpeg"); // Ensure the correct MIME type
       downloadStream.pipe(res);

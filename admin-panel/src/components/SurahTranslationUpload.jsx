@@ -10,34 +10,26 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export function SurahTranslationUpload({ surahNumber, onTranslationAdded }) {
   const [uploadLoading, setUploadLoading] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState("");
+  const [language, setLanguage] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const fileInputRef = useRef(null);
 
-  const LANGUAGES = [
-    "English",
-    "Arabic",
-    "Urdu",
-    "French",
-    "German",
-    "Spanish",
-    "Turkish",
-    "Persian",
-    "Chinese",
-    "Russian",
-    "Indonesian",
+  const SAMPLE_JSON = [
+    {
+      ayahNumber: 1,
+      text: "In the name of Allah, the Most Gracious, the Most Merciful.",
+    },
+    {
+      ayahNumber: 2,
+      text: "All praise is due to Allah, Lord of all the worlds.",
+    },
+    { ayahNumber: 3, text: "The Most Gracious, the Most Merciful." },
+    { ayahNumber: 4, text: "Master of the Day of Judgment." },
   ];
 
   const handleFileUpload = async (event) => {
@@ -49,8 +41,8 @@ export function SurahTranslationUpload({ surahNumber, onTranslationAdded }) {
       return;
     }
 
-    if (!selectedLanguage) {
-      toast.error("Please select a language");
+    if (!language.trim()) {
+      toast.error("Please enter a language");
       return;
     }
 
@@ -82,7 +74,7 @@ export function SurahTranslationUpload({ surahNumber, onTranslationAdded }) {
               },
               credentials: "include",
               body: JSON.stringify({
-                language: selectedLanguage,
+                language: language.trim(),
                 translations: jsonData,
               }),
             },
@@ -91,12 +83,10 @@ export function SurahTranslationUpload({ surahNumber, onTranslationAdded }) {
           const responseData = await response.json();
 
           if (response.ok) {
-            toast.success(
-              `${selectedLanguage} translations added successfully`,
-            );
+            toast.success(`${language} translations added successfully`);
             onTranslationAdded();
             setDialogOpen(false);
-            setSelectedLanguage("");
+            setLanguage("");
           } else {
             toast.error(responseData.message || "Failed to add translations");
           }
@@ -120,23 +110,16 @@ export function SurahTranslationUpload({ surahNumber, onTranslationAdded }) {
           <Upload className="mr-2 h-4 w-4" /> Upload Translations
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-fit">
         <DialogHeader>
           <DialogTitle>Upload Surah Translations</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select Language" />
-            </SelectTrigger>
-            <SelectContent>
-              {LANGUAGES.map((lang) => (
-                <SelectItem key={lang} value={lang}>
-                  {lang}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Input
+            placeholder="Enter Language"
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+          />
 
           <Input
             type="file"
@@ -150,7 +133,7 @@ export function SurahTranslationUpload({ surahNumber, onTranslationAdded }) {
           <Button
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
-            disabled={uploadLoading || !selectedLanguage}
+            disabled={uploadLoading || !language.trim()}
           >
             {uploadLoading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -162,7 +145,10 @@ export function SurahTranslationUpload({ surahNumber, onTranslationAdded }) {
 
           <div className="text-sm text-muted-foreground">
             JSON file should be an array of objects with `ayahNumber` and `text`
-            properties.
+            properties. Example:
+            <div className="mt-2 max-h-52 w-full overflow-auto rounded bg-gray-100 p-2 text-sm">
+              <pre>{JSON.stringify(SAMPLE_JSON, null, 2)}</pre>
+            </div>
           </div>
         </div>
       </DialogContent>

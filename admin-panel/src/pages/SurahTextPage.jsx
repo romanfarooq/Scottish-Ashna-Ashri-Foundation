@@ -221,6 +221,7 @@ export function SurahTextPage() {
                 )}
                 Upload JSON
               </Button>
+              <SurahTranslationUpload surahNumber={surahNumber} onTranslationAdded={fetchSurah} />
             </div>
           </div>
         </CardHeader>

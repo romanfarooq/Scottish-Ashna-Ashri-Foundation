@@ -1,11 +1,8 @@
 import mongoose from "mongoose";
 import fs from "fs";
-import dotenv from "dotenv";
 import xml2js from "xml2js";
 import Surah from "../models/Surah.js";
 import connectDB from "../config/db.js";
-
-dotenv.config();
 
 connectDB();
 

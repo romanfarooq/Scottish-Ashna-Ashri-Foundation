@@ -1,8 +1,14 @@
 import mongoose from "mongoose";
 
+const TranslationSchema = new mongoose.Schema({
+  language: { type: String, required: true },
+  text: { type: String, required: true },
+});
+
 const AyahSchema = new mongoose.Schema({
   ayahNumber: { type: Number, required: true },
   text: { type: String, required: true },
+  translations: [TranslationSchema],
   audioFileId: { type: mongoose.Schema.Types.ObjectId, ref: "audio.files" },
 });
 

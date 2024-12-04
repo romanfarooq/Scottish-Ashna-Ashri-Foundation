@@ -15,6 +15,7 @@ import {
   addAudio,
   addAyah,
   addSurah,
+  deleteAudio,
   deleteSurah,
   getAllSurahs,
   getAudio,
@@ -47,11 +48,15 @@ router.post(
   upload.single("audio"),
   addAudio
 );
-
 router.get(
   "/surahs/:surahNumber/ayat/:ayahNumber/audio",
   isAuthenticatedAdmin,
   getAudio
+);
+router.delete(
+  "/surahs/:surahNumber/ayat/:ayahNumber/audio",
+  isAuthenticatedAdmin,
+  deleteAudio
 );
 
 export default router;

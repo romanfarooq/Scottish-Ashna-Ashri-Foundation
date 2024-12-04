@@ -1,11 +1,17 @@
 import toast from "react-hot-toast";
-import { Loader2, Download, Upload, Play, Pause } from "lucide-react";
+import { Loader2, Download, Upload, Trash2 } from "lucide-react";
 import { useParams } from "react-router-dom";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SurahTranslationUpload } from "@/components/SurahTranslationUpload";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -14,10 +20,7 @@ export function SurahTextPage() {
   const [surah, setSurah] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploadLoading, setUploadLoading] = useState(false);
-  const [playingAyah, setPlayingAyah] = useState(null);
-  const audioRefs = useRef({});
   const jsonUploadRef = useRef(null);
-  const audioUploadRefs = useRef({});
 
   const fetchSurah = useCallback(async () => {
     try {
@@ -47,7 +50,7 @@ export function SurahTextPage() {
 
   useEffect(() => {
     fetchSurah();
-  }, []);
+  }, [fetchSurah]);
 
   const handleExportJSON = () => {
     if (!surah) return;
@@ -152,46 +155,25 @@ export function SurahTextPage() {
     }
   };
 
-  const playAudio = async (ayahNumber) => {
-    // Pause any currently playing audio
-    if (playingAyah && audioRefs.current[playingAyah]) {
-      audioRefs.current[playingAyah].pause();
-      audioRefs.current[playingAyah].currentTime = 0;
-    }
-
-    // If clicking the same ayah, just stop
-    if (playingAyah === ayahNumber) {
-      setPlayingAyah(null);
-      return;
-    }
-
+  const handleAudioDelete = async (ayahNumber) => {
     try {
-      const audioUrl = `${API_URL}/api/v1/admin/surahs/${surahNumber}/ayat/${ayahNumber}/audio`;
+      const response = await fetch(
+        `${API_URL}/api/v1/admin/surahs/${surahNumber}/ayat/${ayahNumber}/audio`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        },
+      );
 
-      // Create audio element if it doesn't exist
-      if (!audioRefs.current[ayahNumber]) {
-        const audio = new Audio(audioUrl);
-        audioRefs.current[ayahNumber] = audio;
-
-        const handleAudioEnd = () => {
-          setPlayingAyah(null);
-          audio.removeEventListener("ended", handleAudioEnd);
-        };
-
-        audio.addEventListener("ended", handleAudioEnd);
+      const data = await response.json();
+      if (response.ok) {
+        toast.success("Audio removed successfully!");
+        fetchSurah();
+      } else {
+        toast.error(data.message || "Failed to remove audio.");
       }
-
-      await audioRefs.current[ayahNumber].play();
-      setPlayingAyah(ayahNumber);
     } catch (error) {
-      toast.error("Failed to play audio.");
-    }
-  };
-
-  const pauseAudio = (ayahNumber) => {
-    if (audioRefs.current[ayahNumber]) {
-      audioRefs.current[ayahNumber].pause();
-      setPlayingAyah(null);
+      toast.error("Audio removal failed.");
     }
   };
 
@@ -248,7 +230,7 @@ export function SurahTextPage() {
             {surah.ayat.map((ayah) => (
               <div
                 key={ayah.ayahNumber}
-                className="flex items-center justify-between space-x-4"
+                className="flex flex-col justify-between space-y-4"
               >
                 <div className="flex-grow">
                   <div className="font-arabic text-right text-xl leading-loose rtl:text-right">
@@ -258,43 +240,58 @@ export function SurahTextPage() {
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-end space-x-2">
+                  {ayah.audioFileId && (
+                    <div className="flex items-center space-x-2">
+                      <audio
+                        src={`${API_URL}/api/v1/admin/surahs/${surahNumber}/ayat/${ayah.ayahNumber}/audio`}
+                        controls
+                      />
+                    </div>
+                  )}
                   <Input
                     type="file"
                     accept="audio/*"
                     className="hidden"
-                    ref={(el) => {
-                      audioUploadRefs.current[ayah.ayahNumber] = el;
-                    }}
+                    id={`audio-upload-${ayah.ayahNumber}`}
                     onChange={(e) => handleAudioUpload(ayah.ayahNumber, e)}
                   />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() =>
-                      audioUploadRefs.current[ayah.ayahNumber]?.click()
-                    }
-                  >
-                    <Upload className="h-4 w-4" />
-                  </Button>
-                  {playingAyah === ayah.ayahNumber ? (
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => pauseAudio(ayah.ayahNumber)}
-                    >
-                      <Pause className="h-4 w-4" />
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      disabled={!ayah.audioFileId}
-                      onClick={() => playAudio(ayah.ayahNumber)}
-                    >
-                      <Play className="h-4 w-4" />
-                    </Button>
-                  )}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={ayah.audioFileId}
+                        className="transition-colors duration-200 hover:bg-primary/10"
+                        onClick={() =>
+                          document
+                            .getElementById(`audio-upload-${ayah.ayahNumber}`)
+                            .click()
+                        }
+                      >
+                        <Upload className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Upload Audio</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive/80"
+                        disabled={!ayah.audioFileId}
+                        onClick={() => handleAudioDelete(ayah.ayahNumber)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Remove Audio</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
             ))}

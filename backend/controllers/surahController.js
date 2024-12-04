@@ -1,6 +1,6 @@
+import mongoose from "mongoose";
 import Surah from "../models/Surah.js";
 import { gfs } from "../config/db.js";
-import mongoose, { Types } from "mongoose";
 import { body, param, validationResult } from "express-validator";
 
 export const validateSurahNumber = [
@@ -270,6 +270,11 @@ export const getAudio = [
 
       const downloadStream = gfs.openDownloadStream(ayah.audioFileId);
 
+      downloadStream.on("error", (err) => {
+        console.error("Error streaming audio:", err);
+        res.status(500).json({ message: "Failed to stream audio." });
+      });
+      
       res.set("Content-Type", "audio/mpeg"); // Ensure the correct MIME type
       downloadStream.pipe(res);
     } catch (error) {

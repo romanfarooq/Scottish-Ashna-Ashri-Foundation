@@ -173,9 +173,12 @@ export function SurahTextPage() {
         const audio = new Audio(audioUrl);
         audioRefs.current[ayahNumber] = audio;
 
-        audio.addEventListener("ended", () => {
+        const handleAudioEnd = () => {
           setPlayingAyah(null);
-        });
+          audio.removeEventListener("ended", handleAudioEnd);
+        };
+
+        audio.addEventListener("ended", handleAudioEnd);
       }
 
       await audioRefs.current[ayahNumber].play();

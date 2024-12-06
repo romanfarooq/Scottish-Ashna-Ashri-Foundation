@@ -23,6 +23,7 @@ export function AddSurahDialog({ fetchSurahs }) {
     englishName: "",
     meaning: "",
     ayat: [],
+    translations: [],
   });
 
   const handleAddSurah = async () => {

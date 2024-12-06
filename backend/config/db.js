@@ -1,19 +1,22 @@
 import mongoose from "mongoose";
 
-let gfs;
+let gfsAudio, gfsImage;
 
 export default async function connectDB() {
   try {
     const conn = await mongoose.connect(process.env.MONGO_URI);
     console.log(`MongoDB Connected: ${conn.connection.host}`);
-    gfs = new mongoose.mongo.GridFSBucket(conn.connection.db, {
+    gfsAudio = new mongoose.mongo.GridFSBucket(conn.connection.db, {
       bucketName: "audio",
     });
-    console.log("GridFS Bucket Initialized");
+    gfsImage = new mongoose.mongo.GridFSBucket(conn.connection.db, {
+      bucketName: "image",
+    });
+    console.log("GridFS Buckets Initialized");
   } catch (error) {
     console.error(`Error: ${error.message}`);
-    process.exit(1); // Exit process with failure
+    process.exit(1);
   }
 }
 
-export { gfs };
+export { gfsAudio, gfsImage };

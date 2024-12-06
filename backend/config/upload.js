@@ -15,7 +15,7 @@ const imageStorage = new GridFsStorage({
   url: process.env.MONGO_URI,
   file: (req, file) => {
     return {
-      bucketName: "images",
+      bucketName: "image",
       filename: `${Date.now()}-${file.originalname}`,
     };
   },

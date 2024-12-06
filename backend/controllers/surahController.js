@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import Surah from "../models/Surah.js";
-import { gfs } from "../config/db.js";
+import { gfsAudio } from "../config/db.js";
 import { body, param, validationResult } from "express-validator";
 
 export const validateSurahNumber = [
@@ -336,7 +336,7 @@ export const getAudio = [
           .json({ message: "Audio not found for this ayah." });
       }
 
-      const downloadStream = gfs.openDownloadStream(ayah.audioFileId);
+      const downloadStream = gfsAudio.openDownloadStream(ayah.audioFileId);
 
       downloadStream.on("error", (err) => {
         console.error("Error streaming audio:", err);
@@ -371,7 +371,7 @@ export const deleteAudio = [
       }
 
       const audioFileId = ayah.audioFileId;
-      gfs.delete(new mongoose.Types.ObjectId(audioFileId), (err) => {
+      gfsAudio.delete(new mongoose.Types.ObjectId(audioFileId), (err) => {
         if (err) {
           console.error("Error deleting audio from GridFS:", err);
           return res

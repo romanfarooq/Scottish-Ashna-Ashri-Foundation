@@ -22,6 +22,27 @@ import {
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+const SAMPLE_JSON = {
+  surahNumber: 108,
+  name: "الكوثر",
+  englishName: "Al-Kawthar",
+  meaning: "The Abundance",
+  ayat: [
+    {
+      ayahNumber: 1,
+      text: "بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ إِنَّا أَعْطَيْنَاكَ الْكَوْثَرَ",
+    },
+    {
+      ayahNumber: 2,
+      text: "فَصَلِّ لِرَبِّكَ وَانْحَرْ",
+    },
+    {
+      ayahNumber: 3,
+      text: "إِنَّ شَانِئَكَ هُوَ الْأَبْتَرُ",
+    },
+  ],
+};
+
 export function SurahTextPage() {
   const { surahNumber } = useParams();
   const [surah, setSurah] = useState(null);
@@ -207,7 +228,6 @@ export function SurahTextPage() {
         toast.success("Translation deleted successfully");
         fetchSurah();
 
-        // Reset selected translation if the current one was deleted
         if (selectedTranslationLanguage === language) {
           setSelectedTranslationLanguage(
             surah.translations.length > 0
@@ -287,7 +307,6 @@ export function SurahTextPage() {
         </CardHeader>
         <CardContent>
           <Separator className="my-4" />
-
           {surah.translations && surah.translations.length > 0 && (
             <div className="mb-4 flex items-center space-x-2">
               <Select
@@ -308,8 +327,6 @@ export function SurahTextPage() {
                   ))}
                 </SelectContent>
               </Select>
-
-              {/* Translation Management Buttons */}
               {selectedTranslationLanguage && (
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -330,81 +347,89 @@ export function SurahTextPage() {
           )}
 
           <div className="space-y-4">
-            {surah.ayat.map((ayah) => (
-              <div
-                key={ayah.ayahNumber}
-                className="flex flex-col justify-between space-y-4"
-              >
-                <div className="flex-grow">
-                  <div className="font-arabic text-right text-xl leading-loose rtl:text-right">
-                    {ayah.text}
-                    <span className="ml-2 text-sm text-muted-foreground">
-                      ({ayah.ayahNumber})
-                    </span>
-                  </div>
-                  {/* Translation Display */}
-                  {selectedTranslationLanguage && (
-                    <div className="mt-2 text-left text-base text-muted-foreground">
-                      {findTranslationForAyah(ayah.ayahNumber) ||
-                        "No translation available"}
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center justify-end space-x-2">
-                  {ayah.audioFileId && (
-                    <div className="flex items-center space-x-2">
-                      <audio
-                        src={`${API_URL}/api/v1/admin/surahs/${surahNumber}/ayat/${ayah.ayahNumber}/audio`}
-                        controls
-                      />
-                    </div>
-                  )}
-                  <Input
-                    type="file"
-                    accept="audio/*"
-                    className="hidden"
-                    id={`audio-upload-${ayah.ayahNumber}`}
-                    onChange={(e) => handleAudioUpload(ayah.ayahNumber, e)}
-                  />
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={ayah.audioFileId}
-                        className="transition-colors duration-200 hover:bg-primary/10"
-                        onClick={() =>
-                          document
-                            .getElementById(`audio-upload-${ayah.ayahNumber}`)
-                            .click()
-                        }
-                      >
-                        <Upload className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Upload Audio</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:text-destructive/80"
-                        disabled={!ayah.audioFileId}
-                        onClick={() => handleAudioDelete(ayah.ayahNumber)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Remove Audio</p>
-                    </TooltipContent>
-                  </Tooltip>
+            {!surah.ayat || surah.ayat.length === 0 ? (
+              <div className="text-sm text-muted-foreground">
+                JSON file should have the following structure:
+                <div className="mt-2 max-h-52 w-full overflow-auto rounded bg-gray-100 p-2 text-sm">
+                  <pre>{JSON.stringify(SAMPLE_JSON, null, 2)}</pre>
                 </div>
               </div>
-            ))}
+            ) : (
+              surah.ayat.map((ayah) => (
+                <div
+                  key={ayah.ayahNumber}
+                  className="flex flex-col justify-between space-y-4"
+                >
+                  <div className="flex-grow">
+                    <div className="font-arabic text-right text-xl leading-loose rtl:text-right">
+                      {ayah.text}
+                      <span className="ml-2 text-sm text-muted-foreground">
+                        ({ayah.ayahNumber})
+                      </span>
+                    </div>
+                    {selectedTranslationLanguage && (
+                      <div className="mt-2 text-left text-base text-muted-foreground">
+                        {findTranslationForAyah(ayah.ayahNumber) ||
+                          "No translation available"}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-end space-x-2">
+                    {ayah.audioFileId && (
+                      <div className="flex items-center space-x-2">
+                        <audio
+                          src={`${API_URL}/api/v1/admin/surahs/${surahNumber}/ayat/${ayah.ayahNumber}/audio`}
+                          controls
+                        />
+                      </div>
+                    )}
+                    <Input
+                      type="file"
+                      accept="audio/*"
+                      className="hidden"
+                      id={`audio-upload-${ayah.ayahNumber}`}
+                      onChange={(e) => handleAudioUpload(ayah.ayahNumber, e)}
+                    />
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled={ayah.audioFileId}
+                          className="transition-colors duration-200 hover:bg-primary/10"
+                          onClick={() =>
+                            document
+                              .getElementById(`audio-upload-${ayah.ayahNumber}`)
+                              .click()
+                          }
+                        >
+                          <Upload className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Upload Audio</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive/80"
+                          disabled={!ayah.audioFileId}
+                          onClick={() => handleAudioDelete(ayah.ayahNumber)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Remove Audio</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

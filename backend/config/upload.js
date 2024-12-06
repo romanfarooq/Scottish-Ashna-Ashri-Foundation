@@ -1,16 +1,25 @@
 import multer from "multer";
 import { GridFsStorage } from "multer-gridfs-storage";
 
-const storage = new GridFsStorage({
+const audioStorage = new GridFsStorage({
   url: process.env.MONGO_URI,
   file: (req, file) => {
     return {
-      bucketName: "audio", // Ensure it matches the bucket used in GridFSBucket
+      bucketName: "audio",
       filename: `${Date.now()}-${file.originalname}`,
     };
   },
 });
 
-const upload = multer({ storage });
+const imageStorage = new GridFsStorage({
+  url: process.env.MONGO_URI,
+  file: (req, file) => {
+    return {
+      bucketName: "images",
+      filename: `${Date.now()}-${file.originalname}`,
+    };
+  },
+});
 
-export default upload;
+export const audioUpload = multer({ storage: audioStorage });
+export const imageUpload = multer({ storage: imageStorage });

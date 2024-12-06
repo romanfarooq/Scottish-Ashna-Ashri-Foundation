@@ -1,5 +1,5 @@
-import upload from "../config/upload.js";
 import { Router } from "express";
+import { audioUpload } from "../config/upload.js";
 import { isAuthenticatedAdmin } from "../middleware/authMiddleware.js";
 import { getAbout, updateAbout } from "../controllers/aboutController.js";
 import {
@@ -47,7 +47,7 @@ router.post("/surahs/:surahNumber/ayat", isAuthenticatedAdmin, addAyah);
 router.post(
   "/surahs/:surahNumber/ayat/:ayahNumber/audio",
   isAuthenticatedAdmin,
-  upload.single("audio"),
+  audioUpload.single("audio"),
   addAudio
 );
 router.get(
@@ -63,12 +63,12 @@ router.delete(
 router.post(
   "/surahs/:surahNumber/translations",
   isAuthenticatedAdmin,
-  addTranslation,
+  addTranslation
 );
 router.delete(
   "/surahs/:surahNumber/translations/:language",
   isAuthenticatedAdmin,
-  deleteTranslation,
+  deleteTranslation
 );
 
 export default router;

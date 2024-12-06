@@ -22,14 +22,16 @@ export function SurahTranslationUpload({ surahNumber, onTranslationAdded }) {
   const SAMPLE_JSON = [
     {
       ayahNumber: 1,
-      text: "In the name of Allah, the Most Gracious, the Most Merciful.",
+      text: "Indeed, We have granted you, [O Muhammad], Al-Kawthar.",
     },
     {
       ayahNumber: 2,
-      text: "All praise is due to Allah, Lord of all the worlds.",
+      text: "So pray to your Lord and sacrifice [to Him alone].",
     },
-    { ayahNumber: 3, text: "The Most Gracious, the Most Merciful." },
-    { ayahNumber: 4, text: "Master of the Day of Judgment." },
+    {
+      ayahNumber: 3,
+      text: "Indeed, your enemy is the one cut off.",
+    },
   ];
 
   const handleFileUpload = async (event) => {

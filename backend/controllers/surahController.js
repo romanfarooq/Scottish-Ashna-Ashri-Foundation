@@ -247,7 +247,6 @@ export const updateSurah = [
   },
 ];
 
-// Delete an existing Surah
 export const deleteSurah = [
   validateSurahNumber,
   handleValidationErrors,
@@ -267,7 +266,6 @@ export const deleteSurah = [
   },
 ];
 
-// Add a new Ayah to a Surah
 export const addAyah = [
   validateAddorUpdateAyah,
   handleValidationErrors,

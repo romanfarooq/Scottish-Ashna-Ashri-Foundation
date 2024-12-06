@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 const AdminSchema = new mongoose.Schema(
   {
@@ -24,6 +24,6 @@ AdminSchema.methods.isValidPassword = async function (password) {
   return bcrypt.compare(password, this.password);
 };
 
-const Admin = mongoose.model("Admin", AdminSchema);
+const Admin = mongoose.models.Admin || mongoose.model("Admin", AdminSchema);
 
 export default Admin;

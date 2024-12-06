@@ -75,7 +75,7 @@ export function SurahTranslationUpload({ surahNumber, onTranslationAdded }) {
               credentials: "include",
               body: JSON.stringify({
                 language: language.trim(),
-                translations: jsonData,
+                translation: jsonData,
               }),
             },
           );
@@ -110,7 +110,7 @@ export function SurahTranslationUpload({ surahNumber, onTranslationAdded }) {
           <Upload className="mr-2 h-4 w-4" /> Upload Translations
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-fit">
+      <DialogContent className="max-w-fit" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Upload Surah Translations</DialogTitle>
         </DialogHeader>

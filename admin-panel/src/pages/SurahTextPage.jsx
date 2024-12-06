@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SurahTranslationUpload } from "@/components/SurahTranslationUpload";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -20,6 +27,8 @@ export function SurahTextPage() {
   const [surah, setSurah] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploadLoading, setUploadLoading] = useState(false);
+  const [selectedTranslationLanguage, setSelectedTranslationLanguage] =
+    useState(null);
   const jsonUploadRef = useRef(null);
 
   const fetchSurah = useCallback(async () => {
@@ -38,6 +47,9 @@ export function SurahTextPage() {
       const data = await response.json();
       if (response.ok) {
         setSurah(data.surah);
+        if (data.surah.translations?.length > 0) {
+          setSelectedTranslationLanguage(data.surah.translations[0].language);
+        }
       } else {
         toast.error(data.message);
       }
@@ -177,6 +189,51 @@ export function SurahTextPage() {
     }
   };
 
+  const handleDeleteTranslation = async (language) => {
+    try {
+      const response = await fetch(
+        `${API_URL}/api/v1/admin/surahs/${surahNumber}/translations/${language}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        },
+      );
+
+      const data = await response.json();
+      if (response.ok) {
+        toast.success("Translation deleted successfully");
+        fetchSurah();
+
+        // Reset selected translation if the current one was deleted
+        if (selectedTranslationLanguage === language) {
+          setSelectedTranslationLanguage(
+            surah.translations.length > 0
+              ? surah.translations[0].language
+              : null,
+          );
+        }
+      } else {
+        toast.error(data.message || "Failed to delete translation");
+      }
+    } catch (error) {
+      toast.error("Failed to delete translation");
+    }
+  };
+
+  const findTranslationForAyah = (ayahNumber) => {
+    if (!selectedTranslationLanguage || !surah.translations) return null;
+
+    const translation = surah.translations.find(
+      (t) => t.language === selectedTranslationLanguage,
+    );
+
+    return translation?.translation.find((t) => t.ayahNumber === ayahNumber)
+      ?.text;
+  };
+
   if (loading) {
     return (
       <div className="flex h-full flex-col items-center justify-center">
@@ -221,12 +278,57 @@ export function SurahTextPage() {
                 )}
                 Upload JSON
               </Button>
-              <SurahTranslationUpload surahNumber={surahNumber} onTranslationAdded={fetchSurah} />
+              <SurahTranslationUpload
+                surahNumber={surahNumber}
+                onTranslationAdded={fetchSurah}
+              />
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <Separator className="my-4" />
+
+          {surah.translations && surah.translations.length > 0 && (
+            <div className="mb-4 flex items-center space-x-2">
+              <Select
+                value={selectedTranslationLanguage || ""}
+                onValueChange={setSelectedTranslationLanguage}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select Translation" />
+                </SelectTrigger>
+                <SelectContent>
+                  {surah.translations.map((translation) => (
+                    <SelectItem
+                      key={translation.language}
+                      value={translation.language}
+                    >
+                      {translation.language}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Translation Management Buttons */}
+              {selectedTranslationLanguage && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      onClick={() =>
+                        handleDeleteTranslation(selectedTranslationLanguage)
+                      }
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Delete Translation</TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+          )}
+
           <div className="space-y-4">
             {surah.ayat.map((ayah) => (
               <div
@@ -240,6 +342,13 @@ export function SurahTextPage() {
                       ({ayah.ayahNumber})
                     </span>
                   </div>
+                  {/* Translation Display */}
+                  {selectedTranslationLanguage && (
+                    <div className="mt-2 text-left text-base text-muted-foreground">
+                      {findTranslationForAyah(ayah.ayahNumber) ||
+                        "No translation available"}
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center justify-end space-x-2">
                   {ayah.audioFileId && (

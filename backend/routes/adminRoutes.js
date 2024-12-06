@@ -15,8 +15,10 @@ import {
   addAudio,
   addAyah,
   addSurah,
+  addTranslation,
   deleteAudio,
   deleteSurah,
+  deleteTranslation,
   getAllSurahs,
   getAudio,
   getSurahByNumber,
@@ -57,6 +59,16 @@ router.delete(
   "/surahs/:surahNumber/ayat/:ayahNumber/audio",
   isAuthenticatedAdmin,
   deleteAudio
+);
+router.post(
+  "/surahs/:surahNumber/translations",
+  isAuthenticatedAdmin,
+  addTranslation,
+);
+router.delete(
+  "/surahs/:surahNumber/translations/:language",
+  isAuthenticatedAdmin,
+  deleteTranslation,
 );
 
 export default router;

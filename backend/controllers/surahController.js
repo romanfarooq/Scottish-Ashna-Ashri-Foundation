@@ -37,31 +37,26 @@ export const validateAddorUpdateSurah = [
               "ayahNumber must be a number and text must be a string."
             );
           }
-          if (ayah.translations) {
-            if (!Array.isArray(ayah.translations)) {
-              throw new Error("Translations must be an array.");
-            }
-
-            for (const translation of ayah.translations) {
-              if (!translation.language || !translation.text) {
-                throw new Error(
-                  "Each translation must have language and text."
-                );
-              }
-              if (
-                typeof translation.language !== "string" ||
-                typeof translation.text !== "string"
-              ) {
-                throw new Error(
-                  "Translation language and text must be strings."
-                );
-              }
-            }
-          }
         }
       }
       return true;
     }),
+  body("translations")
+    .optional({ nullable: true })
+    .isArray()
+    .withMessage("Translations must be an array."),
+  body("translations.*.language")
+    .isString()
+    .withMessage("Each translation must have a valid language (string)."),
+  body("translations.*.translation")
+    .isArray()
+    .withMessage("Each translation must contain a translation array."),
+  body("translations.*.translation.*.ayahNumber")
+    .isInt({ min: 1 })
+    .withMessage("Each ayahNumber must be a positive integer."),
+  body("translations.*.translation.*.text")
+    .isString()
+    .withMessage("Each translation text must be a string."),
 ];
 
 export const validateAddorUpdateAyah = [
@@ -84,27 +79,25 @@ export const validateAddorUpdateAyah = [
             "ayahNumber must be a number and text must be a string."
           );
         }
-
-        if (ayah.translations) {
-          if (!Array.isArray(ayah.translations)) {
-            throw new Error("Translations must be an array.");
-          }
-
-          for (const translation of ayah.translations) {
-            if (!translation.language || !translation.text) {
-              throw new Error("Each translation must have language and text.");
-            }
-            if (
-              typeof translation.language !== "string" ||
-              typeof translation.text !== "string"
-            ) {
-              throw new Error("Translation language and text must be strings.");
-            }
-          }
-        }
       }
       return true;
     }),
+  body("translations")
+    .optional({ nullable: true })
+    .isArray()
+    .withMessage("Translations must be an array."),
+  body("translations.*.language")
+    .isString()
+    .withMessage("Each translation must have a valid language (string)."),
+  body("translations.*.translation")
+    .isArray()
+    .withMessage("Each translation must contain a translation array."),
+  body("translations.*.translation.*.ayahNumber")
+    .isInt({ min: 1 })
+    .withMessage("Each ayahNumber must be a positive integer."),
+  body("translations.*.translation.*.text")
+    .isString()
+    .withMessage("Each translation text must be a string."),
 ];
 
 export const validateAddAudio = [
@@ -144,22 +137,20 @@ export const validateAddTranslation = [
   param("surahNumber")
     .isInt({ gt: 0 })
     .withMessage("Surah number must be a positive integer."),
+  body("language").isString().notEmpty().withMessage("Language is required."),
   body("translation")
     .isArray()
     .withMessage("Translations must be an array.")
     .custom((value) => {
-      if (!value.language || !value.length) {
-        throw new Error("Translation must have language.");
-      }
       for (const ayah of value) {
         if (!ayah.ayahNumber || !ayah.text) {
           throw new Error("Each ayah must have ayahNumber and text.");
         }
-        if (
-          typeof ayah.ayahNumber != "number" ||
-          typeof ayah.text !== "string"
-        ) {
-          throw new Error("Translation language and text must be strings.");
+        if (typeof ayah.ayahNumber !== "number") {
+          throw new Error("ayahNumber must be a number.");
+        }
+        if (typeof ayah.text !== "string") {
+          throw new Error("text must be a string.");
         }
         return true;
       }
@@ -183,7 +174,6 @@ export const getAllSurahs = async (req, res) => {
   }
 };
 
-// Get a single Surah by its number
 export const getSurahByNumber = [
   validateSurahNumber,
   handleValidationErrors,
@@ -192,7 +182,13 @@ export const getSurahByNumber = [
     try {
       const surah = await Surah.findOne(
         { surahNumber: parseInt(surahNumber, 10) },
-        { _id: 0, __v: 0, "ayat._id": 0 }
+        {
+          _id: 0,
+          __v: 0,
+          "ayat._id": 0,
+          "translations._id": 0,
+          "translations.translation._id": 0,
+        }
       );
       if (!surah) {
         return res.status(404).json({ message: "Surah not found." });
@@ -229,7 +225,6 @@ export const addSurah = [
   },
 ];
 
-// Update an existing Surah
 export const updateSurah = [
   validateAddorUpdateSurah,
   handleValidationErrors,
@@ -350,7 +345,7 @@ export const getAudio = [
         res.status(500).json({ message: "Failed to stream audio." });
       });
 
-      res.set("Content-Type", "audio/mpeg"); // Ensure the correct MIME type
+      res.set("Content-Type", "audio/mpeg");
       downloadStream.pipe(res);
     } catch (error) {
       res.status(500).json({ message: "Failed to stream audio." });
@@ -365,7 +360,6 @@ export const deleteAudio = [
     const { surahNumber, ayahNumber } = req.params;
 
     try {
-      // Find the Surah and Ayah
       const surah = await Surah.findOne({ surahNumber });
       if (!surah) {
         return res.status(404).json({ message: "Surah not found." });
@@ -378,7 +372,6 @@ export const deleteAudio = [
           .json({ message: "No audio associated with this ayah." });
       }
 
-      // Remove the audio file from GridFS
       const audioFileId = ayah.audioFileId;
       gfs.delete(new mongoose.Types.ObjectId(audioFileId), (err) => {
         if (err) {
@@ -389,7 +382,6 @@ export const deleteAudio = [
         }
       });
 
-      // Update the database to remove the reference to the audio file
       const updatedSurah = await Surah.findOneAndUpdate(
         { surahNumber, "ayat.ayahNumber": Number(ayahNumber) },
         { $unset: { "ayat.$.audioFileId": "" } },
@@ -410,23 +402,40 @@ export const deleteAudio = [
   },
 ];
 
-
 export const addTranslation = [
   validateAddTranslation,
   handleValidationErrors,
   async (req, res) => {
     const { surahNumber } = req.params;
-    const { translation } = req.body;
+    const { language, translation } = req.body;
 
     try {
-      const surah = await Surah.findOneAndUpdate(
+      const existingSurah = await Surah.findOne({
+        surahNumber: parseInt(surahNumber, 10),
+        "translations.language": language,
+      });
+
+      if (existingSurah) {
+        return res.status(400).json({
+          message: `Translation for the language '${language}' already exists.`,
+        });
+      }
+
+      const updatedSurah = await Surah.findOneAndUpdate(
         { surahNumber: parseInt(surahNumber, 10) },
-        { $push: { translations: translation } },
+        { $push: { translations: { language, translation } } },
         { new: true }
       );
 
+      if (!updatedSurah) {
+        return res.status(404).json({
+          message: "Surah not found.",
+        });
+      }
+
       res.status(200).json({
         message: "Translation added successfully.",
+        surah: updatedSurah,
       });
     } catch (error) {
       res.status(500).json({
@@ -441,13 +450,12 @@ export const deleteTranslation = [
   validateSurahNumber,
   handleValidationErrors,
   async (req, res) => {
-    const { surahNumber } = req.params;
-    const { translation } = req.body;
+    const { surahNumber, language } = req.params;
 
     try {
       const surah = await Surah.findOneAndUpdate(
         { surahNumber: parseInt(surahNumber, 10) },
-        { $pull: { translations: translation } },
+        { $pull: { translations: { language } } },
         { new: true }
       );
 
@@ -459,42 +467,11 @@ export const deleteTranslation = [
 
       res.status(200).json({
         message: "Translation deleted successfully.",
+        surah,
       });
     } catch (error) {
       res.status(500).json({
         message: "Failed to delete translation.",
-        error: error.message,
-      });
-    }
-  },
-];
-
-export const updateTranslation = [
-  validateAddTranslation,
-  handleValidationErrors,
-  async (req, res) => {
-    const { surahNumber } = req.params;
-    const { translation } = req.body;
-
-    try {
-      const surah = await Surah.findOneAndUpdate(
-        { surahNumber: parseInt(surahNumber, 10) },
-        { $set: { translations: translation } },
-        { new: true }
-      );
-
-      if (!surah) {
-        return res.status(404).json({
-          message: "Translation not found or Surah does not exist.",
-        });
-      }
-
-      res.status(200).json({
-        message: "Translation updated successfully.",
-      });
-    } catch (error) {
-      res.status(500).json({
-        message: "Failed to update translation.",
         error: error.message,
       });
     }

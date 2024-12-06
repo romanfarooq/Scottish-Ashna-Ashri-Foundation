@@ -19,23 +19,46 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Pencil, Trash2, Plus, BookOpen, Loader2 } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  Plus,
+  BookOpen,
+  Loader2,
+  SearchIcon,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "react-hot-toast";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export function QuranTextPage() {
   const [surahs, setSurahs] = useState([]);
+  const [filteredSurahs, setFilteredSurahs] = useState([]);
   const [selectedSurah, setSelectedSurah] = useState(null);
   const [surahToDelete, setSurahToDelete] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
-  // Fetch Surahs on component mount
+  // Fetch and Filter Surahs
   useEffect(() => {
     fetchSurahs();
   }, []);
+
+  useEffect(() => {
+    const filtered = surahs.filter((surah) => {
+      return (
+        (surah.name &&
+          surah.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (surah.englishName &&
+          surah.englishName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (surah.surahNumber && surah.surahNumber.toString().includes(searchTerm))
+      );
+    });
+    setFilteredSurahs(filtered);
+  }, [searchTerm, surahs]);
 
   // Fetch Surahs from backend
   const fetchSurahs = useCallback(async () => {
@@ -49,6 +72,7 @@ export function QuranTextPage() {
         toast.error(data.message);
       }
       setSurahs(data.surahs);
+      setFilteredSurahs(data.surahs);
     } catch (error) {
       toast.error("Failed to load Surahs");
     } finally {
@@ -56,11 +80,12 @@ export function QuranTextPage() {
     }
   }, []);
 
+  // Loading State
   if (loading) {
     return (
-      <div className="flex h-full flex-col items-center justify-center">
-        <Loader2 className="h-16 w-16 animate-spin text-blue-500" />
-        <p className="ml-4 text-lg font-semibold">Loading Surahs...</p>
+      <div className="flex h-full min-h-screen flex-col items-center justify-center bg-gray-50">
+        <Loader2 className="h-16 w-16 animate-spin text-blue-600" />
+        <p className="mt-4 text-xl text-gray-600">Loading Surahs...</p>
       </div>
     );
   }
@@ -161,7 +186,6 @@ export function QuranTextPage() {
     );
   };
 
-  // Deletion Confirmation Dialog
   const DeleteConfirmationDialog = () => {
     const handleDeleteConfirmed = async () => {
       if (surahToDelete) {
@@ -296,65 +320,116 @@ export function QuranTextPage() {
   };
 
   return (
-    <div className="p-4">
-      {/* Add Toaster for notifications */}
-      <Toaster position="top-right" />
+    <div className="min-h-screen bg-gray-50 p-6">
+      <Card className="p-2">
+        <CardHeader>
+          <div className="flex flex-col items-center justify-between space-y-4 md:flex-row md:space-y-0">
+            <h2 className="text-3xl font-bold text-gray-800">
+              Surah Management
+            </h2>
+            <div className="flex space-x-4">
+              <div className="relative max-w-md flex-grow">
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 transform text-gray-400" />
+                <Input
+                  placeholder="Search Surahs..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="border-gray-300 bg-white pl-10"
+                />
+              </div>
+              <AddSurahDialog />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader className="bg-gray-100">
+              <TableRow>
+                <TableHead className="text-center text-gray-600">
+                  Number
+                </TableHead>
+                <TableHead className="text-center text-gray-600">
+                  Arabic Name
+                </TableHead>
+                <TableHead className="text-center text-gray-600">
+                  English Name
+                </TableHead>
+                <TableHead className="text-center text-gray-600">
+                  Meaning
+                </TableHead>
+                <TableHead className="text-center text-gray-600">
+                  Actions
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody className="text-center">
+              {filteredSurahs.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={5}
+                    className="py-8 text-center text-gray-500"
+                  >
+                    No Surahs found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredSurahs.map((surah) => (
+                  <TableRow
+                    key={surah.surahNumber}
+                    className="transition-colors hover:bg-gray-50"
+                  >
+                    <TableCell className="font-medium text-gray-700">
+                      {surah.surahNumber}
+                    </TableCell>
+                    <TableCell className="text-gray-800">
+                      {surah.name || "N/A"}
+                    </TableCell>
+                    <TableCell className="text-gray-800">
+                      {surah.englishName || "N/A"}
+                    </TableCell>
+                    <TableCell className="text-gray-600">
+                      {surah.meaning || "N/A"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="hover:bg-blue-50 hover:text-blue-600"
+                          onClick={() => navigateToAyat(surah)}
+                          title="View Ayat"
+                        >
+                          <BookOpen size={16} />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="hover:bg-green-50 hover:text-green-600"
+                          onClick={() => setSelectedSurah(surah)}
+                          title="Edit Surah"
+                        >
+                          <Pencil size={16} />
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="hover:bg-red-100"
+                          onClick={() => setSurahToDelete(surah)}
+                          title="Delete Surah"
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Surah Management</h2>
-        <AddSurahDialog />
-      </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Number</TableHead>
-            <TableHead>Arabic Name</TableHead>
-            <TableHead>English Name</TableHead>
-            <TableHead>Meaning</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {surahs.map((surah) => (
-            <TableRow key={surah.surahNumber}>
-              <TableCell>{surah.surahNumber}</TableCell>
-              <TableCell>{surah.name || "N/A"}</TableCell>
-              <TableCell>{surah.englishName || "N/A"}</TableCell>
-              <TableCell>{surah.meaning || "N/A"}</TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => navigateToAyat(surah)}
-                    title="View Ayat"
-                  >
-                    <BookOpen size={16} />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setSelectedSurah(surah)}
-                    title="Edit Surah"
-                  >
-                    <Pencil size={16} />
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    onClick={() => setSurahToDelete(surah)}
-                    title="Delete Surah"
-                  >
-                    <Trash2 size={16} />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-
-      {/* Dialogs */}
+      {/* Dialogs remain the same */}
       {selectedSurah && <EditSurahDialog surah={selectedSurah} />}
       <DeleteConfirmationDialog />
     </div>

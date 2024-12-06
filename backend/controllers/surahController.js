@@ -253,12 +253,30 @@ export const deleteSurah = [
   async (req, res) => {
     try {
       const { surahNumber } = req.params;
-      const surah = await Surah.findOneAndDelete({
+      
+      const surah = await Surah.findOne({
         surahNumber: parseInt(surahNumber, 10),
       });
+
       if (!surah) {
         return res.status(404).json({ message: "Surah not found." });
       }
+
+      for (const ayah of surah.ayat) {
+        if (ayah.audioFileId) {
+          gfsAudio.delete(
+            new mongoose.Types.ObjectId(ayah.audioFileId),
+            (err) => {
+              if (err) {
+                console.error("Error deleting audio from GridFS:", err);
+              }
+            }
+          );
+        }
+      }
+
+      await Surah.deleteOne({ surahNumber: parseInt(surahNumber, 10) });
+
       res.status(200).json({ message: "Surah deleted successfully." });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete Surah." });

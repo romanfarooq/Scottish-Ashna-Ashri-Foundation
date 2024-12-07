@@ -359,14 +359,9 @@ export function SurahTextPage() {
                         value={translation.language}
                         className="group cursor-pointer rounded-md px-3 py-2 transition-colors hover:bg-blue-50 hover:text-blue-600"
                       >
-                        <div className="flex items-center justify-between">
-                          <span className="transition-transform group-hover:translate-x-1">
-                            {translation.language}
-                          </span>
-                          <span className="ml-2 text-xs text-gray-400 transition-colors group-hover:text-blue-400">
-                            {translation.translation.length} ayahs
-                          </span>
-                        </div>
+                        <span className="transition-colors group-hover:text-blue-600">
+                          {translation.language}
+                        </span>
                       </SelectItem>
                     ))}
                   </SelectContent>

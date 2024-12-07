@@ -56,7 +56,6 @@ export function SurahTranslationUpload({ surahNumber, onTranslationAdded }) {
         try {
           const jsonData = JSON.parse(e.target.result);
 
-          // Validate JSON structure
           if (
             !Array.isArray(jsonData) ||
             jsonData.length === 0 ||
@@ -109,7 +108,7 @@ export function SurahTranslationUpload({ surahNumber, onTranslationAdded }) {
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Upload className="mr-2 h-4 w-4" /> Upload Translations
+          <Upload className="mr-2 h-4 w-4" /> Upload Translation
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-fit" aria-describedby={undefined}>

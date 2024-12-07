@@ -341,6 +341,7 @@ export const getSurahAudio = [
     const { surahNumber } = req.params;
     try {
       const surah = await Surah.findOne({ surahNumber });
+      
       if (!surah) {
         return res.status(404).json({ message: "Surah not found." });
       }
@@ -351,15 +352,53 @@ export const getSurahAudio = [
           .json({ message: "Audio not found for this surah." });
       }
 
-      const downloadStream = gfsAudio.openDownloadStream(surah.audioFileId);
+      const files = await gfsAudio.find({ _id: surah.audioFileId }).toArray();
+      if (!files || files.length === 0) {
+        return res.status(404).json({ message: "Audio metadata not found." });
+      }
 
-      downloadStream.on("error", (err) => {
-        console.error("Error streaming audio:", err);
-        res.status(500).json({ message: "Failed to stream audio." });
-      });
+      const file = files[0];
+      const { length, contentType } = file;
+      const rangeHeader = req.headers.range;
 
-      res.set("Content-Type", "audio/mpeg");
-      downloadStream.pipe(res);
+      if (rangeHeader) {
+        const range = rangeHeader.replace(/bytes=/, "").split("-");
+        const start = parseInt(range[0], 10);
+        const end = range[1] ? parseInt(range[1], 10) : length - 1;
+
+        if (start >= length || end >= length) {
+          return res
+            .status(416)
+            .json({ message: "Requested Range Not Satisfiable" });
+        }
+
+        const chunkSize = end - start + 1;
+
+        const downloadStream = gfsAudio.openDownloadStream(surah.audioFileId, {
+          start,
+          end: end + 1,
+        });
+
+        res.status(206);
+        res.set("Content-Range", `bytes ${start}-${end}/${length}`);
+        res.set("Accept-Ranges", "bytes");
+        res.set("Content-Length", chunkSize);
+        res.set("Content-Type", contentType);
+
+        downloadStream.pipe(res);
+      } else {
+        const downloadStream = gfsAudio.openDownloadStream(surah.audioFileId);
+
+        downloadStream.on("error", (err) => {
+          console.error("Error streaming audio:", err);
+          res.status(500).json({ message: "Failed to stream audio." });
+        });
+
+        res.status(200);
+        res.set("Content-Type", contentType);
+        res.set("Content-Length", length);
+        downloadStream.pipe(res);
+      }
     } catch (error) {
       res.status(500).json({ message: "Failed to stream audio." });
     }

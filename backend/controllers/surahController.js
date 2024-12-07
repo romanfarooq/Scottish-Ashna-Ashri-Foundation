@@ -204,7 +204,7 @@ export const addSurah = [
   validateAddorUpdateSurah,
   handleValidationErrors,
   async (req, res) => {
-    const { surahNumber, name, englishName, meaning, ayat } = req.body;
+    const { surahNumber, name, englishName, meaning, ayat, translations } = req.body;
     try {
       if (await Surah.exists({ surahNumber })) {
         return res.status(400).json({ message: "Surah already exists." });
@@ -216,6 +216,7 @@ export const addSurah = [
         englishName,
         meaning,
         ayat,
+        translations,
       });
       await newSurah.save();
       res.status(201).json({ message: "Surah added successfully." });

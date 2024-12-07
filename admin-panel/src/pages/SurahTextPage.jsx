@@ -1,7 +1,7 @@
 import toast from "react-hot-toast";
 import { useParams } from "react-router-dom";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Loader2, Download, Upload, Trash2 } from "lucide-react";
+import { Loader2, Download, Upload, Trash2, SearchIcon } from "lucide-react";
 import { SurahTranslationUpload } from "@/components/SurahTranslationUpload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -48,9 +48,21 @@ export function SurahTextPage() {
   const [surah, setSurah] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploadLoading, setUploadLoading] = useState(false);
-  const [selectedTranslationLanguage, setSelectedTranslationLanguage] =
-    useState(null);
+  const [selectedTranslationLanguage, setSelectedTranslationLanguage] = useState(null);
   const jsonUploadRef = useRef(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredAyat, setFilteredAyat] = useState([]);
+
+  useEffect(() => {
+    fetchSurah();
+  }, []);
+
+  useEffect(() => {
+    const filtered = surah?.ayat?.filter((ayah) => {
+      return ayah.ayahNumber && ayah.ayahNumber.toString().includes(searchTerm);
+    });
+    setFilteredAyat(filtered);
+  }, [searchTerm, surah]);
 
   const fetchSurah = useCallback(async () => {
     try {
@@ -68,6 +80,7 @@ export function SurahTextPage() {
       const data = await response.json();
       if (response.ok) {
         setSurah(data.surah);
+        setFilteredAyat(data.surah?.ayat);
         if (data.surah.translations?.length > 0) {
           setSelectedTranslationLanguage(data.surah.translations[0].language);
         }
@@ -302,6 +315,17 @@ export function SurahTextPage() {
                 surahNumber={surahNumber}
                 onTranslationAdded={fetchSurah}
               />
+              <div className="flex space-x-4">
+                <div className="relative max-w-44 flex-grow">
+                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 transform text-gray-400" />
+                  <Input
+                    placeholder="Enter Ayah Number"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="border-gray-300 bg-white pl-10"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -346,7 +370,7 @@ export function SurahTextPage() {
             </div>
           )}
           <div className="space-y-4">
-            {!surah.ayat || surah.ayat.length === 0 ? (
+            {!filteredAyat || filteredAyat.length === 0 ? (
               <div className="text-sm text-muted-foreground">
                 JSON file should have the following structure:
                 <div className="mt-2 max-h-52 w-full overflow-auto rounded bg-gray-100 p-2 text-sm">
@@ -354,7 +378,7 @@ export function SurahTextPage() {
                 </div>
               </div>
             ) : (
-              surah.ayat.map((ayah) => (
+              filteredAyat.map((ayah) => (
                 <div
                   key={ayah.ayahNumber}
                   className="flex flex-col justify-between space-y-4"

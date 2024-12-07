@@ -593,8 +593,7 @@ export const deleteAyahAudio = [
           .json({ message: "No audio associated with this ayah." });
       }
 
-      const audioFileId = ayah.audioFileId;
-      gfsAudio.delete(new mongoose.Types.ObjectId(audioFileId), (err) => {
+      gfsAudio.delete(new mongoose.Types.ObjectId(ayah.audioFileId), (err) => {
         if (err) {
           console.error("Error deleting audio from GridFS:", err);
           return res

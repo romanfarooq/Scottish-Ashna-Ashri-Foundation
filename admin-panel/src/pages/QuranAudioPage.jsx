@@ -139,7 +139,7 @@ export function QuranAudioPage() {
         <CardContent>
           {filteredSurahs.map((surah) => (
             <div key={surah.surahNumber} className="mb-4 rounded-lg border">
-              <div className="flex items-center justify-between p-4 hover:bg-gray-100">
+              <div className="flex items-center justify-between p-4 transition-all hover:bg-gray-50">
                 <div className="flex items-center space-x-4">
                   <span className="text-lg font-bold">
                     {surah.surahNumber}. {surah.name} ({surah.englishName})
@@ -165,8 +165,9 @@ export function QuranAudioPage() {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        variant="ghost"
+                        variant="destructive"
                         size="icon"
+                        className="h-9 w-9 scale-90 bg-green-50 text-green-500 opacity-80 transition-all hover:scale-100 hover:bg-green-100 hover:text-green-600 hover:opacity-100"
                         disabled={!!surah.audioFileId}
                         onClick={() => {
                           document
@@ -176,27 +177,36 @@ export function QuranAudioPage() {
                             .click();
                         }}
                       >
-                        <Upload className="h-4 w-4" />
+                        <Upload className="h-5 w-5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Upload Audio</p>
+                    <TooltipContent
+                      side="bottom"
+                      className="rounded-md border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs text-gray-700 shadow-sm"
+                    >
+                      Upload Audio
                     </TooltipContent>
                   </Tooltip>
+
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        variant="ghost"
+                        variant="destructive"
                         size="icon"
-                        className="text-destructive hover:text-destructive/80"
+                        className="h-9 w-9 scale-90 bg-red-50 text-red-500 opacity-80 transition-all hover:scale-100 hover:bg-red-100 hover:text-red-600 hover:opacity-100"
                         disabled={!surah.audioFileId}
-                        onClick={() => handleSurahAudioDelete(surah.surahNumber)}
+                        onClick={() =>
+                          handleSurahAudioDelete(surah.surahNumber)
+                        }
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-5 w-5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Remove Audio</p>
+                    <TooltipContent
+                      side="bottom"
+                      className="rounded-md border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs text-gray-700 shadow-sm"
+                    >
+                      Remove Audio
                     </TooltipContent>
                   </Tooltip>
                 </div>

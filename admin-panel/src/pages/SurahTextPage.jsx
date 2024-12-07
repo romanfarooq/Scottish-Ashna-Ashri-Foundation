@@ -269,26 +269,34 @@ export function SurahTextPage() {
 
   if (loading) {
     return (
-      <div className="flex h-full flex-col items-center justify-center">
-        <Loader2 className="h-16 w-16 animate-spin text-blue-500" />
-        <p className="ml-4 text-lg font-semibold">Loading Surah...</p>
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="mx-auto mb-4 h-16 w-16 animate-spin text-blue-600" />
+          <p className="text-xl font-medium text-gray-700">Loading Surah...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto max-w-4xl p-4">
+    <div className="container mx-auto max-w-5xl px-4 py-8">
       <Card>
-        <CardHeader className="text-center">
-          <div className="flex flex-col items-center justify-between space-y-10">
-            <div className="flex-grow">
-              <CardTitle className="text-2xl font-bold">
-                {surah.name} ({surah.englishName})
+        <CardHeader className="bg-gray-50/50 pb-4">
+          <div className="flex flex-col items-center justify-between space-y-6">
+            <div className="text-center">
+              <CardTitle className="text-3xl font-bold text-gray-800">
+                {surah.name}{" "}
+                <span className="text-gray-600">({surah.englishName})</span>
               </CardTitle>
-              <p className="text-muted-foreground">{surah.meaning}</p>
+              <p className="mt-2 text-lg text-gray-500">{surah.meaning}</p>
             </div>
-            <div className="flex space-x-2">
-              <Button variant="outline" onClick={handleExportJSON}>
+
+            <div className="flex flex-wrap justify-center gap-3">
+              <Button
+                variant="outline"
+                className="transition-all hover:bg-blue-50 hover:text-blue-600"
+                onClick={handleExportJSON}
+              >
                 <Download className="mr-2 h-4 w-4" /> Export JSON
               </Button>
               <Input
@@ -301,6 +309,7 @@ export function SurahTextPage() {
               />
               <Button
                 variant="outline"
+                className="transition-all hover:bg-green-50 hover:text-green-600"
                 onClick={() => jsonUploadRef.current?.click()}
                 disabled={uploadLoading}
               >
@@ -315,65 +324,90 @@ export function SurahTextPage() {
                 surahNumber={surahNumber}
                 onTranslationAdded={fetchSurah}
               />
-              <div className="flex space-x-4">
-                <div className="relative max-w-44 flex-grow">
-                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 transform text-gray-400" />
-                  <Input
-                    placeholder="Enter Ayah Number"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="border-gray-300 bg-white pl-10"
-                  />
-                </div>
+              <div className="relative max-w-48 flex-grow">
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder="Search Ayah Number"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 transition-all focus:ring-2 focus:ring-blue-200"
+                />
               </div>
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <Separator className="my-4" />
+
+        <Separator className="my-2 bg-gray-200" />
+
+        <CardContent className="space-y-4 bg-white p-6">
           {surah.translations && surah.translations.length > 0 && (
-            <div className="mb-4 flex items-center space-x-2">
-              <Select
-                value={selectedTranslationLanguage || ""}
-                onValueChange={setSelectedTranslationLanguage}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select Translation" />
-                </SelectTrigger>
-                <SelectContent>
-                  {surah.translations.map((translation) => (
-                    <SelectItem
-                      key={translation.language}
-                      value={translation.language}
+            <div className="mb-4 flex items-center space-x-4 rounded-lg border border-gray-200 bg-gray-50 p-3 shadow-sm">
+              <div className="flex w-full items-center space-x-3">
+                <div className="shrink-0 text-sm font-medium text-gray-600">
+                  Translation:
+                </div>
+                <Select
+                  value={selectedTranslationLanguage || ""}
+                  onValueChange={setSelectedTranslationLanguage}
+                >
+                  <SelectTrigger className="min-w-[180px] flex-grow border-gray-300 transition-all focus:ring-2 focus:ring-blue-200">
+                    <SelectValue
+                      placeholder="Choose Language"
+                      className="text-gray-700"
+                    />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-lg bg-white shadow-md">
+                    {surah.translations.map((translation) => (
+                      <SelectItem
+                        key={translation.language}
+                        value={translation.language}
+                        className="group cursor-pointer rounded-md px-3 py-2 transition-colors hover:bg-blue-50 hover:text-blue-600"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="transition-transform group-hover:translate-x-1">
+                            {translation.language}
+                          </span>
+                          <span className="ml-2 text-xs text-gray-400 transition-colors group-hover:text-blue-400">
+                            {translation.translation.length} ayahs
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {selectedTranslationLanguage && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="h-9 w-9 scale-90 bg-red-50 text-red-500 opacity-80 transition-all hover:scale-100 hover:bg-red-100 hover:text-red-600 hover:opacity-100"
+                        onClick={() =>
+                          handleDeleteTranslation(selectedTranslationLanguage)
+                        }
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="bottom"
+                      className="rounded-md border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs text-gray-700 shadow-sm"
                     >
-                      {translation.language}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {selectedTranslationLanguage && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      onClick={() =>
-                        handleDeleteTranslation(selectedTranslationLanguage)
-                      }
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Delete Translation</TooltipContent>
-                </Tooltip>
-              )}
+                      Remove {selectedTranslationLanguage} Translation
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
             </div>
           )}
           <div className="space-y-4">
             {!filteredAyat || filteredAyat.length === 0 ? (
-              <div className="text-sm text-muted-foreground">
-                JSON file should have the following structure:
-                <div className="mt-2 max-h-52 w-full overflow-auto rounded bg-gray-100 p-2 text-sm">
+              <div className="rounded-lg bg-gray-100 p-4 text-gray-600">
+                <p className="mb-2">
+                  JSON file should have the following structure:
+                </p>
+                <div className="max-h-52 overflow-auto rounded bg-white p-3 font-mono text-sm shadow-inner">
                   <pre>{JSON.stringify(SAMPLE_JSON, null, 2)}</pre>
                 </div>
               </div>
@@ -381,74 +415,88 @@ export function SurahTextPage() {
               filteredAyat.map((ayah) => (
                 <div
                   key={ayah.ayahNumber}
-                  className="flex flex-col justify-between space-y-4"
+                  className="rounded-lg bg-gray-50 p-4 shadow-sm transition-all"
                 >
-                  <div className="flex-grow">
-                    <div className="font-arabic text-right text-xl leading-loose rtl:text-right">
+                  <div className="flex flex-col">
+                    <div className="font-arabic text-right text-2xl leading-relaxed rtl:text-right">
                       {ayah.text}
-                      <span className="ml-2 text-sm text-muted-foreground">
+                      <span className="ml-2 text-sm text-gray-500">
                         ({ayah.ayahNumber})
                       </span>
                     </div>
                     {selectedTranslationLanguage && (
-                      <div className="mt-2 text-left text-base text-muted-foreground">
-                        {findTranslationForAyah(ayah.ayahNumber) ||
-                          "No translation available"}
+                      <div className="mt-2 text-left text-base text-gray-600">
+                        {findTranslationForAyah(ayah.ayahNumber) || (
+                          <span className="italic text-gray-400">
+                            No translation available
+                          </span>
+                        )}
                       </div>
                     )}
-                  </div>
-                  <div className="flex items-center justify-end space-x-2">
-                    {ayah.audioFileId && (
-                      <div className="flex items-center space-x-2">
+                    <div className="mt-3 flex items-center justify-end space-x-2">
+                      {ayah.audioFileId && (
                         <audio
                           src={`${API_URL}/api/v1/admin/surahs/${surahNumber}/ayat/${ayah.ayahNumber}/audio`}
                           controls
+                          className="mr-2"
                         />
-                      </div>
-                    )}
-                    <Input
-                      type="file"
-                      accept="audio/*"
-                      className="hidden"
-                      id={`audio-upload-${ayah.ayahNumber}`}
-                      onChange={(e) => handleAudioUpload(ayah.ayahNumber, e)}
-                    />
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          disabled={ayah.audioFileId}
-                          className="transition-colors duration-200 hover:bg-primary/10"
-                          onClick={() =>
-                            document
-                              .getElementById(`audio-upload-${ayah.ayahNumber}`)
-                              .click()
+                      )}
+                      <div className="flex items-center space-x-2">
+                        <Input
+                          type="file"
+                          accept="audio/*"
+                          className="hidden"
+                          id={`audio-upload-${ayah.ayahNumber}`}
+                          onChange={(e) =>
+                            handleAudioUpload(ayah.ayahNumber, e)
                           }
-                        >
-                          <Upload className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Upload Audio</p>
-                      </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:text-destructive/80"
-                          disabled={!ayah.audioFileId}
-                          onClick={() => handleAudioDelete(ayah.ayahNumber)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Remove Audio</p>
-                      </TooltipContent>
-                    </Tooltip>
+                        />
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="h-9 w-9 scale-90 bg-green-50 text-green-500 opacity-80 transition-all hover:scale-100 hover:bg-green-100 hover:text-green-600 hover:opacity-100"
+                              disabled={ayah.audioFileId}
+                              onClick={() =>
+                                document
+                                  .getElementById(
+                                    `audio-upload-${ayah.ayahNumber}`,
+                                  )
+                                  .click()
+                              }
+                            >
+                              <Upload className="h-5 w-5" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            side="bottom"
+                            className="rounded-md border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs text-gray-700 shadow-sm"
+                          >
+                            Upload Audio
+                          </TooltipContent>
+                        </Tooltip>
+
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="h-9 w-9 scale-90 bg-red-50 text-red-500 opacity-80 transition-all hover:scale-100 hover:bg-red-100 hover:text-red-600 hover:opacity-100"
+                              onClick={() => handleAudioDelete(ayah.ayahNumber)}
+                            >
+                              <Trash2 className="h-5 w-5" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            side="bottom"
+                            className="rounded-md border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs text-gray-700 shadow-sm"
+                          >
+                            Remove Audio
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))

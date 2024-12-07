@@ -12,15 +12,18 @@ import {
   verifyOtp,
 } from "../controllers/adminController.js";
 import {
-  addAudio,
   addAyah,
+  addAyahAudio,
   addSurah,
+  addSurahAudio,
   addTranslation,
-  deleteAudio,
+  deleteAyahAudio,
   deleteSurah,
+  deleteSurahAudio,
   deleteTranslation,
   getAllSurahs,
-  getAudio,
+  getAyahAudio,
+  getSurahAudio,
   getSurahByNumber,
   updateSurah,
 } from "../controllers/surahController.js";
@@ -43,22 +46,35 @@ router.get("/surahs/:surahNumber", isAuthenticatedAdmin, getSurahByNumber);
 router.post("/surahs", isAuthenticatedAdmin, addSurah);
 router.put("/surahs/:surahNumber", isAuthenticatedAdmin, updateSurah);
 router.delete("/surahs/:surahNumber", isAuthenticatedAdmin, deleteSurah);
+router.post(
+  "/surahs/:surahNumber/audio",
+  isAuthenticatedAdmin,
+  audioUpload.single("audio"),
+  addSurahAudio
+);
+router.get("/surahs/:surahNumber/audio", isAuthenticatedAdmin, getSurahAudio);
+router.delete(
+  "/surahs/:surahNumber/audio",
+  isAuthenticatedAdmin,
+  deleteSurahAudio
+);
+
 router.post("/surahs/:surahNumber/ayat", isAuthenticatedAdmin, addAyah);
 router.post(
   "/surahs/:surahNumber/ayat/:ayahNumber/audio",
   isAuthenticatedAdmin,
   audioUpload.single("audio"),
-  addAudio
+  addAyahAudio
 );
 router.get(
   "/surahs/:surahNumber/ayat/:ayahNumber/audio",
   isAuthenticatedAdmin,
-  getAudio
+  getAyahAudio
 );
 router.delete(
   "/surahs/:surahNumber/ayat/:ayahNumber/audio",
   isAuthenticatedAdmin,
-  deleteAudio
+  deleteAyahAudio
 );
 router.post(
   "/surahs/:surahNumber/translations",

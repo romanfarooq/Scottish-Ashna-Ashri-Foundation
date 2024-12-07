@@ -21,10 +21,11 @@ const SurahSchema = new mongoose.Schema({
   name: { type: String, required: true },
   englishName: { type: String, required: true },
   meaning: { type: String, required: true },
+  audioFileId: { type: mongoose.Schema.Types.ObjectId, ref: "audio.files" },
   translations: [TranslationSchema],
   ayat: [AyahSchema],
 });
 
-const Surah = mongoose.model("Surah", SurahSchema);
+const Surah = mongoose.models.Surah || mongoose.model("Surah", SurahSchema);
 
 export default Surah;

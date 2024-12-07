@@ -82,7 +82,7 @@ const menuItems = [
           },
           {
             title: "Quran Audio",
-            url: "#",
+            url: "/quran-audio",
             icon: AudioLines,
           },
         ],

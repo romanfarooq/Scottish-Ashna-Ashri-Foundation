@@ -11,6 +11,7 @@ import { OTPInputPage } from "./pages/OTPInputPage";
 import { QuranTextPage } from "./pages/QuranTextPage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { SurahTextPage } from "./pages/SurahTextPage";
+import { QuranAudioPage } from "./pages/QuranAudioPage";
 
 const router = createBrowserRouter([
   {
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
           {
             path: "surah-text/:surahNumber",
             element: <SurahTextPage />,
+          },
+          {
+            path: "quran-audio",
+            element: <QuranAudioPage />,
           },
         ],
       },

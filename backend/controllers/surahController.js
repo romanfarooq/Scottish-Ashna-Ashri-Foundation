@@ -59,6 +59,24 @@ export const validateAddorUpdateSurah = [
     .withMessage("Each translation text must be a string."),
 ];
 
+const validateAddSurahAudio = [
+  param("surahNumber")
+    .isInt({ gt: 0 })
+    .withMessage("Surah number must be a positive integer."),
+  body("audio").custom((value, { req }) => {
+    if (!req.file) {
+      throw new Error("No file uploaded.");
+    }
+    return true;
+  }),
+];
+
+export const validateSurahGetOrDeleteAudio = [
+  param("surahNumber")
+    .isInt({ gt: 0 })
+    .withMessage("Surah number must be a positive integer."),
+];
+
 export const validateAddorUpdateAyah = [
   param("surahNumber")
     .isInt({ gt: 0 })
@@ -100,7 +118,7 @@ export const validateAddorUpdateAyah = [
     .withMessage("Each translation text must be a string."),
 ];
 
-export const validateAddAudio = [
+export const validateAddAyahAudio = [
   param("surahNumber")
     .isInt({ gt: 0 })
     .withMessage("Surah number must be a positive integer."),
@@ -115,16 +133,7 @@ export const validateAddAudio = [
   }),
 ];
 
-export const validateGetAudio = [
-  param("surahNumber")
-    .isInt({ gt: 0 })
-    .withMessage("Surah number must be a positive integer."),
-  param("ayahNumber")
-    .isInt({ gt: 0 })
-    .withMessage("Ayah number must be a positive integer."),
-];
-
-export const validateDeleteAudio = [
+export const validateAyahGetOrDeleteAudio = [
   param("surahNumber")
     .isInt({ gt: 0 })
     .withMessage("Surah number must be a positive integer."),
@@ -204,7 +213,8 @@ export const addSurah = [
   validateAddorUpdateSurah,
   handleValidationErrors,
   async (req, res) => {
-    const { surahNumber, name, englishName, meaning, ayat, translations } = req.body;
+    const { surahNumber, name, englishName, meaning, ayat, translations } =
+      req.body;
     try {
       if (await Surah.exists({ surahNumber })) {
         return res.status(400).json({ message: "Surah already exists." });
@@ -254,13 +264,24 @@ export const deleteSurah = [
   async (req, res) => {
     try {
       const { surahNumber } = req.params;
-      
+
       const surah = await Surah.findOne({
         surahNumber: parseInt(surahNumber, 10),
       });
 
       if (!surah) {
         return res.status(404).json({ message: "Surah not found." });
+      }
+
+      if (surah.audioFileId) {
+        gfsAudio.delete(
+          new mongoose.Types.ObjectId(surah.audioFileId),
+          (err) => {
+            if (err) {
+              console.error("Error deleting audio from GridFS:", err);
+            }
+          }
+        );
       }
 
       for (const ayah of surah.ayat) {
@@ -281,6 +302,112 @@ export const deleteSurah = [
       res.status(200).json({ message: "Surah deleted successfully." });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete Surah." });
+    }
+  },
+];
+
+export const addSurahAudio = [
+  validateAddSurahAudio,
+  handleValidationErrors,
+  async (req, res) => {
+    const { file } = req;
+    const { surahNumber } = req.params;
+    try {
+      const updatedSurah = await Surah.findOneAndUpdate(
+        { surahNumber },
+        { $set: { audioFileId: new mongoose.Types.ObjectId(file.id) } },
+        { new: true }
+      );
+
+      if (!updatedSurah) {
+        return res
+          .status(404)
+          .json({ message: "Failed to update Surah or Surah not found." });
+      }
+
+      res
+        .status(200)
+        .json({ message: "Audio uploaded and linked successfully." });
+    } catch (error) {
+      res.status(500).json({ message: "Audio upload failed." });
+    }
+  },
+];
+
+export const getSurahAudio = [
+  validateSurahGetOrDeleteAudio,
+  handleValidationErrors,
+  async (req, res) => {
+    const { surahNumber } = req.params;
+    try {
+      const surah = await Surah.findOne({ surahNumber });
+      if (!surah) {
+        return res.status(404).json({ message: "Surah not found." });
+      }
+
+      if (!surah.audioFileId) {
+        return res
+          .status(404)
+          .json({ message: "Audio not found for this surah." });
+      }
+
+      const downloadStream = gfsAudio.openDownloadStream(surah.audioFileId);
+
+      downloadStream.on("error", (err) => {
+        console.error("Error streaming audio:", err);
+        res.status(500).json({ message: "Failed to stream audio." });
+      });
+
+      res.set("Content-Type", "audio/mpeg");
+      downloadStream.pipe(res);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to stream audio." });
+    }
+  },
+];
+
+export const deleteSurahAudio = [
+  validateSurahGetOrDeleteAudio,
+  handleValidationErrors,
+  async (req, res) => {
+    const { surahNumber } = req.params;
+    try {
+      const surah = await Surah.findOne({ surahNumber });
+      if (!surah) {
+        return res.status(404).json({ message: "Surah not found." });
+      }
+
+      if (!surah.audioFileId) {
+        return res
+          .status(404)
+          .json({ message: "No audio associated with this surah." });
+      }
+
+      gfsAudio.delete(new mongoose.Types.ObjectId(surah.audioFileId), (err) => {
+        if (err) {
+          console.error("Error deleting audio from GridFS:", err);
+          return res
+            .status(500)
+            .json({ message: "Failed to delete audio file from storage." });
+        }
+      });
+
+      const updatedSurah = await Surah.findOneAndUpdate(
+        { surahNumber },
+        { $unset: { audioFileId: "" } },
+        { new: true }
+      );
+
+      if (!updatedSurah) {
+        return res
+          .status(404)
+          .json({ message: "Failed to update Surah or Surah not found." });
+      }
+
+      res.status(200).json({ message: "Audio deleted successfully." });
+    } catch (error) {
+      console.error("Error in deleteAudio:", error);
+      res.status(500).json({ message: "Audio deletion failed." });
     }
   },
 ];
@@ -307,8 +434,8 @@ export const addAyah = [
   },
 ];
 
-export const addAudio = [
-  validateAddAudio,
+export const addAyahAudio = [
+  validateAddAyahAudio,
   handleValidationErrors,
   async (req, res) => {
     const { file } = req;
@@ -337,8 +464,8 @@ export const addAudio = [
   },
 ];
 
-export const getAudio = [
-  validateGetAudio,
+export const getAyahAudio = [
+  validateAyahGetOrDeleteAudio,
   handleValidationErrors,
   async (req, res) => {
     const { surahNumber, ayahNumber } = req.params;
@@ -370,8 +497,8 @@ export const getAudio = [
   },
 ];
 
-export const deleteAudio = [
-  validateDeleteAudio,
+export const deleteAyahAudio = [
+  validateAyahGetOrDeleteAudio,
   handleValidationErrors,
   async (req, res) => {
     const { surahNumber, ayahNumber } = req.params;

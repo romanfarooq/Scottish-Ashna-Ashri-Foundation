@@ -1,12 +1,17 @@
 import toast from "react-hot-toast";
-import { Loader2, Download, Upload, Trash2 } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { Loader2, Download, Upload, Trash2 } from "lucide-react";
+import { SurahTranslationUpload } from "@/components/SurahTranslationUpload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SurahTranslationUpload } from "@/components/SurahTranslationUpload";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Select,
   SelectContent,
@@ -14,11 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -345,7 +345,6 @@ export function SurahTextPage() {
               )}
             </div>
           )}
-
           <div className="space-y-4">
             {!surah.ayat || surah.ayat.length === 0 ? (
               <div className="text-sm text-muted-foreground">

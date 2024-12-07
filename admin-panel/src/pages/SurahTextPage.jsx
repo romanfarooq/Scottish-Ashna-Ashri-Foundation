@@ -48,7 +48,8 @@ export function SurahTextPage() {
   const [surah, setSurah] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploadLoading, setUploadLoading] = useState(false);
-  const [selectedTranslationLanguage, setSelectedTranslationLanguage] = useState(null);
+  const [selectedTranslationLanguage, setSelectedTranslationLanguage] =
+    useState(null);
   const jsonUploadRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredAyat, setFilteredAyat] = useState([]);
@@ -292,11 +293,7 @@ export function SurahTextPage() {
             </div>
 
             <div className="flex flex-wrap justify-center gap-3">
-              <Button
-                variant="outline"
-                className="transition-all hover:bg-blue-50 hover:text-blue-600"
-                onClick={handleExportJSON}
-              >
+              <Button variant="outline" onClick={handleExportJSON}>
                 <Download className="mr-2 h-4 w-4" /> Export JSON
               </Button>
               <Input
@@ -309,7 +306,6 @@ export function SurahTextPage() {
               />
               <Button
                 variant="outline"
-                className="transition-all hover:bg-green-50 hover:text-green-600"
                 onClick={() => jsonUploadRef.current?.click()}
                 disabled={uploadLoading}
               >

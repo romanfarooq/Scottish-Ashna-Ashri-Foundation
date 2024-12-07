@@ -478,6 +478,7 @@ export function SurahTextPage() {
                             <Button
                               variant="destructive"
                               size="icon"
+                              disabled={!ayah.audioFileId}
                               className="h-9 w-9 scale-90 bg-red-50 text-red-500 opacity-80 transition-all hover:scale-100 hover:bg-red-100 hover:text-red-600 hover:opacity-100"
                               onClick={() => handleAudioDelete(ayah.ayahNumber)}
                             >

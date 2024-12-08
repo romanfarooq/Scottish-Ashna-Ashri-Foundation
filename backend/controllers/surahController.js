@@ -778,8 +778,18 @@ export const getSurahImages = [
 
       const imagesPromise = imageFileIds.map(
         (id) =>
-          new Promise((resolve, reject) => {
-            console.log("Image ID:", id);
+          new Promise(async (resolve, reject) => {
+            let files;
+            try {
+              files = await gfsImage.find({ _id: id }).toArray();
+            } catch (err) {
+              reject(err);
+            }
+            if (!files || files.length === 0) {
+              return reject(new Error("Image metadata not found."));
+            }
+            const file = files[0];
+            const mimeType = file.contentType;
             const chunks = [];
             const downloadStream = gfsImage.openDownloadStream(id);
 
@@ -789,7 +799,7 @@ export const getSurahImages = [
               })
               .on("end", () => {
                 const buffer = Buffer.concat(chunks);
-                resolve(buffer);
+                resolve({ buffer, mimeType });
               })
               .on("error", (error) => {
                 reject(error);
@@ -799,9 +809,10 @@ export const getSurahImages = [
 
       const images = await Promise.all(imagesPromise);
 
-      const imageData = images.map((buffer) => ({
-        image: `data:image/jpeg;base64,${buffer.toString("base64")}`,
-      }));
+      const imageData = images.map(
+        ({ buffer, mimeType }) =>
+          `data:${mimeType};base64,${buffer.toString("base64")}`
+      );
 
       res.status(200).json({
         images: imageData,

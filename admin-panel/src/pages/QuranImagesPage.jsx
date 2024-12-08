@@ -303,14 +303,13 @@ export function QuranImagesPage() {
           ))}
         </div>
         <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-          <DialogContent className="max-w-4xl">
+          <DialogContent aria-describedby={undefined}>
             <DialogHeader>
               <DialogTitle>
                 Surah {selectedSurahNumber} - Page Viewer
               </DialogTitle>
             </DialogHeader>
             <div className="flex flex-col items-center">
-              {/* Image Display */}
               <div className="relative mb-4 flex items-center">
                 <Button
                   variant="outline"
@@ -338,8 +337,6 @@ export function QuranImagesPage() {
                   <ChevronRight size={24} />
                 </Button>
               </div>
-              
-              {/* Page Selector */}
               <div className="flex items-center space-x-4">
                 <span className="text-sm text-gray-600">Go to Page:</span>
                 <Select

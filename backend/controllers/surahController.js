@@ -798,8 +798,8 @@ export const getSurahImages = [
                 chunks.push(chunk);
               })
               .on("end", () => {
-                const buffer = Buffer.concat(chunks);
-                resolve({ buffer, mimeType });
+                const buffer = Buffer.concat(chunks).toString("base64");
+                resolve(`data:${mimeType};base64,${buffer}`);
               })
               .on("error", (error) => {
                 reject(error);
@@ -809,14 +809,7 @@ export const getSurahImages = [
 
       const images = await Promise.all(imagesPromise);
 
-      const imageData = images.map(
-        ({ buffer, mimeType }) =>
-          `data:${mimeType};base64,${buffer.toString("base64")}`
-      );
-
-      res.status(200).json({
-        images: imageData,
-      });
+      res.status(200).json({ images });
     } catch (error) {
       console.error("Error fetching images:", error);
       res.status(500).json({ message: "Error fetching images." });
@@ -854,7 +847,6 @@ export const deleteSurahImages = [
     }
   },
 ];
-
 
 // const { surahNumber } = req.params;
 

@@ -743,8 +743,7 @@ export const uploadSurahImages = [
       if (!surah) {
         return res.status(404).json({ message: "Surah not found." });
       }
-      const imageRecords = files.map((file, index) => ({
-        pageNumber: index + 1,
+      const imageRecords = files.map((file) => ({
         imageFileId: file.id,
       }));
       await surah.updateOne({ $push: { images: { $each: imageRecords } } });
@@ -770,11 +769,7 @@ export const getSurahImages = [
         return res.status(404).json({ message: "Surah not found." });
       }
 
-      const sortedImages = surah.images.sort(
-        (a, b) => a.pageNumber - b.pageNumber
-      );
-
-      const imageFileIds = sortedImages.map((image) => image.imageFileId);
+      const imageFileIds = surah.images.map((image) => image.imageFileId);
 
       const imagesPromise = imageFileIds.map(
         (id) =>
@@ -854,3 +849,34 @@ export const deleteSurahImages = [
     }
   },
 ];
+
+// const { surahNumber } = req.params;
+
+//   try {
+//     const surah = await Surah.findOne({ surahNumber });
+//     if (!surah) {
+//       return res.status(404).json({ message: "Surah not found." });
+//     }
+
+//     const imageFileIds = surah.images.map((image) => image.imageFileId);
+
+//     const bucket = new GridFSBucket(mongoose.connection.db, {
+//       bucketName: "image",
+//     });
+
+//     // Create a zip archive
+//     res.setHeader("Content-Type", "application/zip");
+//     res.setHeader(
+//       "Content-Disposition",
+//       `attachment; filename="surah_${surahNumber}_images.zip"`
+//     );
+
+//     const archive = archiver("zip");
+//     archive.pipe(res);
+
+//     for (const id of imageFileIds) {
+//       const stream = bucket.openDownloadStream(new ObjectId(id));
+//       archive.append(stream, { name: `${id}.jpg` }); // Adjust file name and extension if needed
+//     }
+
+//     await archive.finalize();

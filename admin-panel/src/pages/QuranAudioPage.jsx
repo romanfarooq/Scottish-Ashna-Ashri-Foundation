@@ -18,23 +18,6 @@ export function QuranAudioPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredSurahs, setFilteredSurahs] = useState([]);
 
-  useEffect(() => {
-    fetchSurahs();
-  }, []);
-
-  useEffect(() => {
-    const filtered = surahs.filter((surah) => {
-      return (
-        (surah.name &&
-          surah.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (surah.englishName &&
-          surah.englishName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (surah.surahNumber && surah.surahNumber.toString().includes(searchTerm))
-      );
-    });
-    setFilteredSurahs(filtered);
-  }, [searchTerm, surahs]);
-
   const fetchSurahs = useCallback(async () => {
     try {
       setLoading(true);
@@ -54,6 +37,23 @@ export function QuranAudioPage() {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    fetchSurahs();
+  }, [fetchSurahs]);
+
+  useEffect(() => {
+    const filtered = surahs.filter((surah) => {
+      return (
+        (surah.name &&
+          surah.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (surah.englishName &&
+          surah.englishName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (surah.surahNumber && surah.surahNumber.toString().includes(searchTerm))
+      );
+    });
+    setFilteredSurahs(filtered);
+  }, [searchTerm, surahs]);
 
   const handleSurahAudioUpload = async (surahNumber, event) => {
     const file = event.target.files[0];

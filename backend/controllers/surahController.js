@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import Surah from "../models/Surah.js";
-import { gfsAudio } from "../config/db.js";
+import { gfsAudio, gfsImage } from "../config/db.js";
 import { body, param, validationResult } from "express-validator";
 
 export const validateSurahNumber = [
@@ -163,6 +163,31 @@ export const validateAddTranslation = [
         }
         return true;
       }
+    }),
+];
+
+const validateSurahImages = [
+  param("surahNumber")
+    .isInt({ gt: 0 })
+    .withMessage("Surah number must be a positive integer."),
+  body("images")
+    .isArray()
+    .withMessage("Images must be an array.")
+    .custom((value) => {
+      for (const image of value) {
+        if (!image.pageNumber || !image.imageFileId) {
+          throw new Error("Each image must have pageNumber and imageFileId.");
+        }
+        if (
+          typeof image.pageNumber !== "number" ||
+          typeof image.imageFileId !== "string"
+        ) {
+          throw new Error(
+            "pageNumber must be a number and imageFileId must be a string."
+          );
+        }
+      }
+      return true;
     }),
 ];
 
@@ -694,6 +719,116 @@ export const deleteTranslation = [
         message: "Failed to delete translation.",
         error: error.message,
       });
+    }
+  },
+];
+
+export const uploadSurahImages = [
+  validateSurahImages,
+  handleValidationErrors,
+  async (req, res) => {
+    const { surahNumber } = req.params;
+    const files = req.files;
+
+    try {
+      const surah = await Surah.findOne({ surahNumber });
+      if (!surah) {
+        return res.status(404).json({ message: "Surah not found." });
+      }
+
+      const imageRecords = files.map((file, index) => ({
+        pageNumber: index + 1,
+        imageFileId: file.id,
+      }));
+
+      await surah.updateOne({ $push: { images: { $each: imageRecords } } });
+
+      res.status(200).json({
+        message: "Images uploaded successfully",
+        count: files.length,
+      });
+    } catch (error) {
+      console.error("Upload error:", error);
+      res.status(500).json({ message: "Failed to upload images" });
+    }
+  },
+];
+
+export const getSurahImages = [
+  validateSurahNumber,
+  handleValidationErrors,
+  async (req, res) => {
+    const { surahNumber } = req.params;
+
+    try {
+      const surah = await Surah.findOne({ surahNumber }, { images: 1 });
+
+      if (!surah) {
+        return res.status(404).json({ message: "Surah not found." });
+      }
+
+      const imageFileIds = surah.images.map(
+        (image) => new mongoose.Types.ObjectId(image.imageFileId)
+      );
+
+      const files = await gfsImage
+        .find({ _id: { $in: imageFileIds } })
+        .toArray();
+
+      if (!files || files.length === 0) {
+        return res.status(404).json({ message: "Images not found." });
+      }
+
+      const images = files.map((file) => {
+        const { filename, contentType, uploadDate } = file;
+        return {
+          filename,
+          contentType,
+          uploadDate,
+        };
+      });
+
+      const imagesWithPageNumbers = surah.images.map((image, index) => ({
+        pageNumber: image.pageNumber,
+        image: images[index],
+      }));
+
+      res.status(200).json({ images: imagesWithPageNumbers });
+    } catch (error) {
+      console.error("Error fetching images:", error);
+      res.status(500).json({ message: "Failed to fetch images." });
+    }
+  },
+];
+
+export const deleteSurahImages = [
+  validateSurahNumber,
+  handleValidationErrors,
+  async (req, res) => {
+    const { surahNumber } = req.params;
+
+    try {
+      const surah = await Surah.findOne({ surahNumber });
+      if (!surah) {
+        return res.status(404).json({ message: "Surah not found." });
+      }
+
+      const imageFileIds = surah.images.map(
+        (image) => new mongoose.Types.ObjectId(image.imageFileId)
+      );
+
+      gfsImage.delete({ _id: { $in: imageFileIds } }, (err) => {
+        if (err) {
+          console.error("Error deleting images from GridFS:", err);
+        }
+      });
+
+      await surah.updateOne({ $set: { images: [] } });
+
+      res.status(200).json({ message: "Images deleted successfully." });
+    } catch (error) {
+      console.error("Error deleting images:", error);
+      res.status(500).json({ message: "Failed to delete images." });
     }
   },
 ];

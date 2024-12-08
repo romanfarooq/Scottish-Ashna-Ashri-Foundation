@@ -12,6 +12,7 @@ import { QuranTextPage } from "./pages/QuranTextPage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { SurahTextPage } from "./pages/SurahTextPage";
 import { QuranAudioPage } from "./pages/QuranAudioPage";
+import { QuranImagesPage } from "./pages/QuranImagesPage";
 
 const router = createBrowserRouter([
   {
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
             path: "quran-audio",
             element: <QuranAudioPage />,
           },
+          {
+            path: "quran-images",
+            element: <QuranImagesPage />,
+          }
         ],
       },
     ],

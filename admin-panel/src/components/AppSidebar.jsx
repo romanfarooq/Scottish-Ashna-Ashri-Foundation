@@ -67,7 +67,7 @@ const menuItems = [
           },
           {
             title: "Quran Surah Wise (Book Format)",
-            url: "#",
+            url: "/quran-images",
             icon: ListTree,
           },
           {

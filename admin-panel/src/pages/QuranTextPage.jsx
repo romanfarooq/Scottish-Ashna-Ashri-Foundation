@@ -28,23 +28,6 @@ export function QuranTextPage() {
   const [selectedSurah, setSelectedSurah] = useState(null);
   const [surahToDelete, setSurahToDelete] = useState(null);
 
-  useEffect(() => {
-    fetchSurahs();
-  }, []);
-
-  useEffect(() => {
-    const filtered = surahs.filter((surah) => {
-      return (
-        (surah.name &&
-          surah.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (surah.englishName &&
-          surah.englishName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (surah.surahNumber && surah.surahNumber.toString().includes(searchTerm))
-      );
-    });
-    setFilteredSurahs(filtered);
-  }, [searchTerm, surahs]);
-
   const fetchSurahs = useCallback(async () => {
     try {
       setLoading(true);
@@ -63,6 +46,23 @@ export function QuranTextPage() {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    fetchSurahs();
+  }, [fetchSurahs]);
+
+  useEffect(() => {
+    const filtered = surahs.filter((surah) => {
+      return (
+        (surah.name &&
+          surah.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (surah.englishName &&
+          surah.englishName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (surah.surahNumber && surah.surahNumber.toString().includes(searchTerm))
+      );
+    });
+    setFilteredSurahs(filtered);
+  }, [searchTerm, surahs]);
 
   if (loading) {
     return (

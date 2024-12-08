@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { audioUpload } from "../config/upload.js";
+import { audioUpload, imageUpload } from "../config/upload.js";
 import { isAuthenticatedAdmin } from "../middleware/authMiddleware.js";
 import { getAbout, updateAbout } from "../controllers/aboutController.js";
 import {
@@ -20,12 +20,15 @@ import {
   deleteAyahAudio,
   deleteSurah,
   deleteSurahAudio,
+  deleteSurahImages,
   deleteTranslation,
   getAllSurahs,
   getAyahAudio,
   getSurahAudio,
   getSurahByNumber,
+  getSurahImages,
   updateSurah,
+  uploadSurahImages,
 } from "../controllers/surahController.js";
 
 const router = Router();
@@ -85,6 +88,18 @@ router.delete(
   "/surahs/:surahNumber/translations/:language",
   isAuthenticatedAdmin,
   deleteTranslation
+);
+router.get("/surahs/:surahNumber/images", isAuthenticatedAdmin, getSurahImages);
+router.post(
+  "/surahs/:surahNumber/images",
+  isAuthenticatedAdmin,
+  imageUpload.array("images"),
+  uploadSurahImages
+);
+router.delete(
+  "/surahs/:surahNumber/images",
+  isAuthenticatedAdmin,
+  deleteSurahImages
 );
 
 export default router;

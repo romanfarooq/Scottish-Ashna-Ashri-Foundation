@@ -1,5 +1,14 @@
 import mongoose from "mongoose";
 
+const SurahImageSchema = new mongoose.Schema({
+  pageNumber: { type: Number, required: true },
+  imageFileId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "image.files",
+    required: true,
+  },
+});
+
 const AyahTranslationSchema = new mongoose.Schema({
   ayahNumber: { type: Number, required: true },
   text: { type: String, required: true },
@@ -24,6 +33,7 @@ const SurahSchema = new mongoose.Schema({
   audioFileId: { type: mongoose.Schema.Types.ObjectId, ref: "audio.files" },
   translations: [TranslationSchema],
   ayat: [AyahSchema],
+  images: [SurahImageSchema],
 });
 
 const Surah = mongoose.models.Surah || mongoose.model("Surah", SurahSchema);

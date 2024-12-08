@@ -54,17 +54,6 @@ export function SurahTextPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredAyat, setFilteredAyat] = useState([]);
 
-  useEffect(() => {
-    fetchSurah();
-  }, []);
-
-  useEffect(() => {
-    const filtered = surah?.ayat?.filter((ayah) => {
-      return ayah.ayahNumber && ayah.ayahNumber.toString().includes(searchTerm);
-    });
-    setFilteredAyat(filtered);
-  }, [searchTerm, surah]);
-
   const fetchSurah = useCallback(async () => {
     try {
       setLoading(true);
@@ -98,6 +87,13 @@ export function SurahTextPage() {
   useEffect(() => {
     fetchSurah();
   }, [fetchSurah]);
+
+  useEffect(() => {
+    const filtered = surah?.ayat?.filter((ayah) => {
+      return ayah.ayahNumber && ayah.ayahNumber.toString().includes(searchTerm);
+    });
+    setFilteredAyat(filtered);
+  }, [searchTerm, surah]);
 
   const handleExportJSON = () => {
     if (!surah) return;

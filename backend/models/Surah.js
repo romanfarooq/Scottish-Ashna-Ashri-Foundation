@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 const SurahImageSchema = new mongoose.Schema({
+  pageNumber: { type: Number, required: true },
   imageFileId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "image.files",

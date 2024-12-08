@@ -743,7 +743,8 @@ export const uploadSurahImages = [
       if (!surah) {
         return res.status(404).json({ message: "Surah not found." });
       }
-      const imageRecords = files.map((file) => ({
+      const imageRecords = files.map((file, index) => ({
+        pageNumber: index + 1,
         imageFileId: file.id,
       }));
       await surah.updateOne({ $push: { images: { $each: imageRecords } } });
@@ -769,7 +770,11 @@ export const getSurahImages = [
         return res.status(404).json({ message: "Surah not found." });
       }
 
-      const imageFileIds = surah.images.map((image) => image.imageFileId);
+      const sortedImages = surah.images.sort(
+        (a, b) => a.pageNumber - b.pageNumber
+      );
+
+      const imageFileIds = sortedImages.map((image) => image.imageFileId);
 
       const imagesPromise = imageFileIds.map(
         (id) =>
@@ -849,6 +854,7 @@ export const deleteSurahImages = [
     }
   },
 ];
+
 
 // const { surahNumber } = req.params;
 

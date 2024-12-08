@@ -1,7 +1,15 @@
 import toast from "react-hot-toast";
 import { useParams } from "react-router-dom";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Loader2, Download, Upload, Trash2, SearchIcon } from "lucide-react";
+import {
+  Loader2,
+  Download,
+  Upload,
+  Trash2,
+  SearchIcon,
+  Play,
+  CircleX,
+} from "lucide-react";
 import { SurahTranslationUpload } from "@/components/SurahTranslationUpload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -48,11 +56,11 @@ export function SurahTextPage() {
   const [surah, setSurah] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploadLoading, setUploadLoading] = useState(false);
-  const [selectedTranslationLanguage, setSelectedTranslationLanguage] =
-    useState(null);
+  const [selectedTranslationLanguage, setSelectedTranslationLanguage] = useState(null);
   const jsonUploadRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredAyat, setFilteredAyat] = useState([]);
+  const [activeAudioAyah, setActiveAudioAyah] = useState(null);
 
   const fetchSurah = useCallback(async () => {
     try {
@@ -199,6 +207,10 @@ export function SurahTextPage() {
   };
 
   const handleAudioDelete = async (ayahNumber) => {
+    if (activeAudioAyah === ayahNumber) {
+      setActiveAudioAyah(null);
+    }
+
     try {
       const response = await fetch(
         `${API_URL}/api/v1/admin/surahs/${surahNumber}/ayat/${ayahNumber}/audio`,
@@ -262,6 +274,10 @@ export function SurahTextPage() {
 
     return translation?.translation.find((t) => t.ayahNumber === ayahNumber)
       ?.text;
+  };
+
+  const handleAudioPlay = (ayah) => {
+    setActiveAudioAyah(ayah.ayahNumber);
   };
 
   if (loading) {
@@ -420,14 +436,43 @@ export function SurahTextPage() {
                         )}
                       </div>
                     )}
-                    <div className="mt-3 flex items-center justify-end space-x-2">
-                      {ayah.audioFileId && (
-                        <audio
-                          src={`${API_URL}/api/v1/admin/surahs/${surahNumber}/ayat/${ayah.ayahNumber}/audio`}
-                          controls
-                          className="mr-2"
-                        />
-                      )}
+                    <div className="my-3 flex items-center justify-end space-x-2">
+                      {ayah.audioFileId &&
+                        (activeAudioAyah === ayah.ayahNumber ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                onClick={() => setActiveAudioAyah(null)}
+                                className="rounded-md bg-gray-50 p-2 text-gray-600 hover:bg-gray-100"
+                              >
+                                <CircleX className="h-5 w-5" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="bottom"
+                              className="rounded-md border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs text-gray-700 shadow-sm"
+                            >
+                              Stop Audio
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                onClick={() => handleAudioPlay(ayah)}
+                                className="h-9 w-9 scale-90 bg-gray-50 text-gray-500 opacity-80 transition-all hover:scale-100 hover:bg-gray-100 hover:text-gray-600 hover:opacity-100"
+                              >
+                                <Play className="h-5 w-5" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="bottom"
+                              className="rounded-md border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs text-gray-700 shadow-sm"
+                            >
+                              Play Audio
+                            </TooltipContent>
+                          </Tooltip>
+                        ))}
                       <div className="flex items-center space-x-2">
                         <Input
                           type="file"
@@ -485,6 +530,16 @@ export function SurahTextPage() {
                         </Tooltip>
                       </div>
                     </div>
+                    {activeAudioAyah === ayah.ayahNumber && (
+                      <div className="bg-gray-50 p-4">
+                        <audio
+                          src={`${API_URL}/api/v1/admin/surahs/${surahNumber}/ayat/${ayah.ayahNumber}/audio`}
+                          controls
+                          autoPlay
+                          className="w-full"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               ))

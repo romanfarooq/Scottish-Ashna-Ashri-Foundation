@@ -9,6 +9,11 @@ import { DeleteConfirmationDialog } from "@/components/DeleteConfirmationDialog"
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Pencil, Trash2, BookOpen, Loader2, SearchIcon } from "lucide-react";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Table,
   TableBody,
   TableCell,
@@ -116,6 +121,9 @@ export function QuranTextPage() {
                   Meaning
                 </TableHead>
                 <TableHead className="text-center text-gray-600">
+                  Juzz Number
+                </TableHead>
+                <TableHead className="text-center text-gray-600">
                   Actions
                 </TableHead>
               </TableRow>
@@ -148,35 +156,66 @@ export function QuranTextPage() {
                     <TableCell className="text-gray-600">
                       {surah.meaning || "N/A"}
                     </TableCell>
+                    <TableCell className="text-gray-600">
+                      {surah.juzzNumber || "N/A"}
+                    </TableCell>
                     <TableCell>
                       <div className="flex justify-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700"
-                          onClick={() => navigateToAyat(surah)}
-                          title="View Ayat"
-                        >
-                          <BookOpen size={16} />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700"
-                          onClick={() => setSelectedSurah(surah)}
-                          title="Edit Surah"
-                        >
-                          <Pencil size={16} />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          className="hover:bg-red-600"
-                          onClick={() => setSurahToDelete(surah)}
-                          title="Delete Surah"
-                        >
-                          <Trash2 size={16} />
-                        </Button>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700"
+                              onClick={() => navigateToAyat(surah)}
+                            >
+                              <BookOpen size={16} />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            side="bottom"
+                            className="rounded-md border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs text-gray-700 shadow-sm"
+                          >
+                            View Ayat
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700"
+                              onClick={() => setSelectedSurah(surah)}
+                              title="Edit Surah"
+                            >
+                              <Pencil size={16} />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            side="bottom"
+                            className="rounded-md border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs text-gray-700 shadow-sm"
+                          >
+                            Edit Surah
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="hover:bg-red-600"
+                              onClick={() => setSurahToDelete(surah)}
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            side="bottom"
+                            className="rounded-md border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs text-gray-700 shadow-sm"
+                          >
+                            Delete Surah
+                          </TooltipContent>
+                        </Tooltip>
                       </div>
                     </TableCell>
                   </TableRow>

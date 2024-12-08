@@ -1,9 +1,16 @@
 import toast from "react-hot-toast";
 import { useState, useEffect, useCallback } from "react";
-import { Loader2, SearchIcon, Upload, Trash2 } from "lucide-react";
+import {
+  Search,
+  FileAudio,
+  Upload,
+  Trash2,
+  Play,
+  CircleX,
+  Loader2,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Tooltip,
   TooltipContent,
@@ -17,6 +24,7 @@ export function QuranAudioPage() {
   const [surahs, setSurahs] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredSurahs, setFilteredSurahs] = useState([]);
+  const [activeAudioSurah, setActiveAudioSurah] = useState(null);
 
   const fetchSurahs = useCallback(async () => {
     try {
@@ -44,12 +52,11 @@ export function QuranAudioPage() {
 
   useEffect(() => {
     const filtered = surahs.filter((surah) => {
+      const searchLower = searchTerm.toLowerCase();
       return (
-        (surah.name &&
-          surah.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (surah.englishName &&
-          surah.englishName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (surah.surahNumber && surah.surahNumber.toString().includes(searchTerm))
+        surah.name?.toLowerCase().includes(searchLower) ||
+        surah.englishName?.toLowerCase().includes(searchLower) ||
+        surah.surahNumber?.toString().includes(searchLower)
       );
     });
     setFilteredSurahs(filtered);
@@ -106,6 +113,10 @@ export function QuranAudioPage() {
     }
   };
 
+  const handleAudioPlay = (surah) => {
+    setActiveAudioSurah(surah.surahNumber);
+  };
+
   if (loading) {
     return (
       <div className="flex h-full min-h-screen flex-col items-center justify-center bg-gray-50">
@@ -116,43 +127,80 @@ export function QuranAudioPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <Card className="p-2">
-        <CardHeader>
-          <div className="flex flex-col items-center justify-between space-y-4 md:flex-row md:space-y-0">
-            <h2 className="text-2xl font-bold text-gray-800">
-              Quran Audio Management
-            </h2>
-            <div className="flex space-x-4">
-              <div className="relative max-w-md flex-grow">
-                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 transform text-gray-400" />
-                <Input
-                  placeholder="Search Surahs..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="border-gray-300 bg-white pl-10"
-                />
-              </div>
-            </div>
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="container mx-auto max-w-6xl">
+        <div className="mb-8 flex items-center justify-between border-b border-gray-200 pb-4">
+          <h1 className="flex items-center text-2xl font-semibold text-gray-800">
+            <FileAudio className="mr-3 text-gray-600" />
+            Quran Audio Management
+          </h1>
+          <div className="relative w-80">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Search Surahs..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full rounded-md border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-gray-700 shadow-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200"
+            />
           </div>
-        </CardHeader>
-        <CardContent>
+        </div>
+
+        <div className="space-y-4">
           {filteredSurahs.map((surah) => (
-            <div key={surah.surahNumber} className="mb-4 rounded-lg border">
-              <div className="flex items-center justify-between p-4 transition-all hover:bg-gray-50">
+            <div
+              key={surah.surahNumber}
+              className="rounded-lg border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-md"
+            >
+              <div className="flex items-center justify-between border-b border-gray-100 p-4">
                 <div className="flex items-center space-x-4">
-                  <span className="text-lg font-bold">
-                    {surah.surahNumber}. {surah.name} ({surah.englishName})
-                  </span>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 font-bold text-gray-700">
+                    {surah.surahNumber}
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-800">{surah.name}</h3>
+                    <p className="text-sm text-gray-500">{surah.englishName}</p>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  {surah.audioFileId && (
-                    <audio
-                      src={`${API_URL}/api/v1/admin/surahs/${surah.surahNumber}/audio`}
-                      controls
-                      className="mr-2"
-                    />
-                  )}
+
+                <div className="flex items-center space-x-3">
+                  {surah.audioFileId &&
+                    (activeAudioSurah === surah.surahNumber ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            onClick={() => setActiveAudioSurah(null)}
+                            className="rounded-md bg-gray-50 p-2 text-gray-600 hover:bg-gray-100"
+                          >
+                            <CircleX className="h-5 w-5" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          side="bottom"
+                          className="rounded-md border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs text-gray-700 shadow-sm"
+                        >
+                          Stop Audio
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            onClick={() => handleAudioPlay(surah)}
+                            className="rounded-md bg-gray-50 p-2 text-gray-600 hover:bg-gray-100"
+                          >
+                            <Play className="h-5 w-5" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          side="bottom"
+                          className="rounded-md border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs text-gray-700 shadow-sm"
+                        >
+                          Play Audio
+                        </TooltipContent>
+                      </Tooltip>
+                    ))}
+
                   <input
                     type="file"
                     accept="audio/*"
@@ -162,20 +210,19 @@ export function QuranAudioPage() {
                       handleSurahAudioUpload(surah.surahNumber, e)
                     }
                   />
+
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        variant="destructive"
-                        size="icon"
-                        className="h-9 w-9 scale-90 bg-green-50 text-green-500 opacity-80 transition-all hover:scale-100 hover:bg-green-100 hover:text-green-600 hover:opacity-100"
-                        disabled={!!surah.audioFileId}
-                        onClick={() => {
+                        onClick={() =>
                           document
                             .getElementById(
                               `surah-audio-upload-${surah.surahNumber}`,
                             )
-                            .click();
-                        }}
+                            .click()
+                        }
+                        disabled={!!surah.audioFileId}
+                        className="rounded-md bg-gray-50 p-2 text-gray-600 hover:bg-gray-100 disabled:opacity-50"
                       >
                         <Upload className="h-5 w-5" />
                       </Button>
@@ -191,13 +238,11 @@ export function QuranAudioPage() {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        variant="destructive"
-                        size="icon"
-                        className="h-9 w-9 scale-90 bg-red-50 text-red-500 opacity-80 transition-all hover:scale-100 hover:bg-red-100 hover:text-red-600 hover:opacity-100"
-                        disabled={!surah.audioFileId}
                         onClick={() =>
                           handleSurahAudioDelete(surah.surahNumber)
                         }
+                        disabled={!surah.audioFileId}
+                        className="rounded-md bg-red-50 p-2 text-red-600 hover:bg-red-100 disabled:opacity-50"
                       >
                         <Trash2 className="h-5 w-5" />
                       </Button>
@@ -206,15 +251,26 @@ export function QuranAudioPage() {
                       side="bottom"
                       className="rounded-md border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs text-gray-700 shadow-sm"
                     >
-                      Remove Audio
+                      Delete Audio
                     </TooltipContent>
                   </Tooltip>
                 </div>
               </div>
+
+              {activeAudioSurah === surah.surahNumber && (
+                <div className="bg-gray-50 p-4">
+                  <audio
+                    src={`${API_URL}/api/v1/admin/surahs/${surah.surahNumber}/audio`}
+                    controls
+                    autoPlay
+                    className="w-full"
+                  />
+                </div>
+              )}
             </div>
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

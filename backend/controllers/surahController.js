@@ -19,6 +19,9 @@ export const validateAddorUpdateSurah = [
     .notEmpty()
     .withMessage("English name is required."),
   body("meaning").isString().notEmpty().withMessage("Meaning is required."),
+  body("juzzNumber")
+    .isInt({ gt: 0 })
+    .withMessage("Juzz number must be a positive integer."),
   body("ayat")
     .optional({ nullable: true })
     .isArray()
@@ -238,7 +241,7 @@ export const addSurah = [
   validateAddorUpdateSurah,
   handleValidationErrors,
   async (req, res) => {
-    const { surahNumber, name, englishName, meaning, ayat, translations } =
+    const { surahNumber, name, englishName, meaning, juzzNumber, ayat, translations } =
       req.body;
     try {
       if (await Surah.exists({ surahNumber })) {
@@ -250,6 +253,7 @@ export const addSurah = [
         name,
         englishName,
         meaning,
+        juzzNumber,
         ayat,
         translations,
       });

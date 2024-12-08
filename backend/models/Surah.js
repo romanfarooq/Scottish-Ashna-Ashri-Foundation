@@ -30,6 +30,7 @@ const SurahSchema = new mongoose.Schema({
   name: { type: String, required: true },
   englishName: { type: String, required: true },
   meaning: { type: String, required: true },
+  juzzNumber: { type: Number, required: true },
   audioFileId: { type: mongoose.Schema.Types.ObjectId, ref: "audio.files" },
   translations: [TranslationSchema],
   ayat: [AyahSchema],

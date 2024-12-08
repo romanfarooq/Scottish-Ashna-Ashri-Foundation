@@ -22,6 +22,7 @@ export function AddSurahDialog({ fetchSurahs }) {
     name: "",
     englishName: "",
     meaning: "",
+    juzzNumber: "",
     ayat: [],
     translations: [],
   });
@@ -78,7 +79,7 @@ export function AddSurahDialog({ fetchSurahs }) {
             Fill in the details below to add a new Surah to the collection.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-6 py-4">
+        <div className="grid gap-2 py-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">
               Surah Number
@@ -126,6 +127,17 @@ export function AddSurahDialog({ fetchSurahs }) {
               value={newSurah.meaning}
               onChange={(e) =>
                 setNewSurah({ ...newSurah, meaning: e.target.value })
+              }
+              className="focus-visible:ring-2 focus-visible:ring-blue-500"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Juzz Number</label>
+            <Input
+              placeholder="Enter Juzz number"
+              value={newSurah.juzzNumber}
+              onChange={(e) =>
+                setNewSurah({ ...newSurah, juzzNumber: e.target.value })
               }
               className="focus-visible:ring-2 focus-visible:ring-blue-500"
             />

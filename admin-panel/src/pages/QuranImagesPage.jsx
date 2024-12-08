@@ -164,7 +164,7 @@ export function QuranImagesPage() {
   const handleDeleteImages = async (surahNumber) => {
     try {
       const response = await fetch(
-        `${API_URL}/api/surahs/${surahNumber}/images`,
+        `${API_URL}/api/v1/admin/surahs/${surahNumber}/images`,
         {
           method: "DELETE",
           credentials: "include",
@@ -177,6 +177,7 @@ export function QuranImagesPage() {
       }
       toast.success(data.message);
       setImages([]);
+      fetchSurahs();
     } catch (error) {
       toast.error("Failed to delete surah images");
     }

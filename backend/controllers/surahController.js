@@ -829,7 +829,6 @@ export const deleteSurahImages = [
   handleValidationErrors,
   async (req, res) => {
     const { surahNumber } = req.params;
-
     try {
       const surah = await Surah.findOne({ surahNumber });
       if (!surah) {
@@ -838,11 +837,13 @@ export const deleteSurahImages = [
 
       const imageFileIds = surah.images.map((image) => image.imageFileId);
 
-      gfsImage.delete({ _id: { $in: imageFileIds } }, (err) => {
-        if (err) {
-          console.error("Error deleting images from GridFS:", err);
-        }
-      });
+      for (const id of imageFileIds) {
+        gfsImage.delete(id, (err) => {
+          if (err) {
+            console.error("Error deleting image from GridFS:", err);
+          }
+        });
+      }
 
       await surah.updateOne({ $set: { images: [] } });
 

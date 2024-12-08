@@ -104,6 +104,9 @@ export function QuranAudioPage() {
       const data = await response.json();
       if (response.ok) {
         toast.success("Surah audio removed successfully!");
+        if (activeAudioSurah === surahNumber) {
+          setActiveAudioSurah(null);
+        }
         fetchSurahs();
       } else {
         toast.error(data.message || "Failed to remove surah audio.");

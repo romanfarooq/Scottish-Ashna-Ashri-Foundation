@@ -56,7 +56,8 @@ export function SurahTextPage() {
   const [surah, setSurah] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploadLoading, setUploadLoading] = useState(false);
-  const [selectedTranslationLanguage, setSelectedTranslationLanguage] = useState(null);
+  const [selectedTranslationLanguage, setSelectedTranslationLanguage] =
+    useState(null);
   const jsonUploadRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredAyat, setFilteredAyat] = useState([]);
@@ -207,10 +208,6 @@ export function SurahTextPage() {
   };
 
   const handleAudioDelete = async (ayahNumber) => {
-    if (activeAudioAyah === ayahNumber) {
-      setActiveAudioAyah(null);
-    }
-
     try {
       const response = await fetch(
         `${API_URL}/api/v1/admin/surahs/${surahNumber}/ayat/${ayahNumber}/audio`,
@@ -223,6 +220,9 @@ export function SurahTextPage() {
       const data = await response.json();
       if (response.ok) {
         toast.success("Audio removed successfully!");
+        if (activeAudioAyah === ayahNumber) {
+          setActiveAudioAyah(null);
+        }
         fetchSurah();
       } else {
         toast.error(data.message || "Failed to remove audio.");

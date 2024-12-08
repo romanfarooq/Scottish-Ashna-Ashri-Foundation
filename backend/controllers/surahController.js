@@ -173,25 +173,12 @@ const validateSurahImages = [
   param("surahNumber")
     .isInt({ gt: 0 })
     .withMessage("Surah number must be a positive integer."),
-  body("images")
-    .isArray()
-    .withMessage("Images must be an array.")
-    .custom((value) => {
-      for (const image of value) {
-        if (!image.pageNumber || !image.imageFileId) {
-          throw new Error("Each image must have pageNumber and imageFileId.");
-        }
-        if (
-          typeof image.pageNumber !== "number" ||
-          typeof image.imageFileId !== "string"
-        ) {
-          throw new Error(
-            "pageNumber must be a number and imageFileId must be a string."
-          );
-        }
-      }
-      return true;
-    }),
+  body("images").custom((value, { req }) => {
+    if (!req.files || req.files.length === 0) {
+      throw new Error("No files uploaded.");
+    }
+    return true;
+  }),
 ];
 
 export const handleValidationErrors = (req, res, next) => {
@@ -204,7 +191,22 @@ export const handleValidationErrors = (req, res, next) => {
 
 export const getAllSurahs = async (req, res) => {
   try {
-    const surahs = await Surah.find({}, { _id: 0, __v: 0, ayat: 0 });
+    const surahs = await Surah.find(
+      {},
+      { _id: 0, __v: 0, ayat: 0, translations: 0, images: 0 }
+    );
+    res.status(200).json({ surahs });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch Surahs." });
+  }
+};
+
+export const getAllSurahsWithImages = async (req, res) => {
+  try {
+    const surahs = await Surah.find(
+      {},
+      { _id: 0, __v: 0, ayat: 0, translations: 0, "images._id": 0 }
+    );
     res.status(200).json({ surahs });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch Surahs." });
@@ -222,6 +224,7 @@ export const getSurahByNumber = [
         {
           _id: 0,
           __v: 0,
+          images: 0,
           "ayat._id": 0,
           "translations._id": 0,
           "translations.translation._id": 0,
@@ -241,8 +244,15 @@ export const addSurah = [
   validateAddorUpdateSurah,
   handleValidationErrors,
   async (req, res) => {
-    const { surahNumber, name, englishName, meaning, juzzNumber, ayat, translations } =
-      req.body;
+    const {
+      surahNumber,
+      name,
+      englishName,
+      meaning,
+      juzzNumber,
+      ayat,
+      translations,
+    } = req.body;
     try {
       if (await Surah.exists({ surahNumber })) {
         return res.status(400).json({ message: "Surah already exists." });
@@ -303,26 +313,20 @@ export const deleteSurah = [
       }
 
       if (surah.audioFileId) {
-        gfsAudio.delete(
-          new mongoose.Types.ObjectId(surah.audioFileId),
-          (err) => {
-            if (err) {
-              console.error("Error deleting audio from GridFS:", err);
-            }
+        gfsAudio.delete(surah.audioFileId, (err) => {
+          if (err) {
+            console.error("Error deleting audio from GridFS:", err);
           }
-        );
+        });
       }
 
       for (const ayah of surah.ayat) {
         if (ayah.audioFileId) {
-          gfsAudio.delete(
-            new mongoose.Types.ObjectId(ayah.audioFileId),
-            (err) => {
-              if (err) {
-                console.error("Error deleting audio from GridFS:", err);
-              }
+          gfsAudio.delete(ayah.audioFileId, (err) => {
+            if (err) {
+              console.error("Error deleting audio from GridFS:", err);
             }
-          );
+          });
         }
       }
 
@@ -451,7 +455,7 @@ export const deleteSurahAudio = [
           .json({ message: "No audio associated with this surah." });
       }
 
-      gfsAudio.delete(new mongoose.Types.ObjectId(surah.audioFileId), (err) => {
+      gfsAudio.delete(surah.audioFileId, (err) => {
         if (err) {
           console.error("Error deleting audio from GridFS:", err);
           return res
@@ -622,7 +626,7 @@ export const deleteAyahAudio = [
           .json({ message: "No audio associated with this ayah." });
       }
 
-      gfsAudio.delete(new mongoose.Types.ObjectId(ayah.audioFileId), (err) => {
+      gfsAudio.delete(ayah.audioFileId, (err) => {
         if (err) {
           console.error("Error deleting audio from GridFS:", err);
           return res
@@ -733,23 +737,19 @@ export const uploadSurahImages = [
   async (req, res) => {
     const { surahNumber } = req.params;
     const files = req.files;
-
+    files.sort((a, b) => a.originalname.localeCompare(b.originalname));
     try {
       const surah = await Surah.findOne({ surahNumber });
       if (!surah) {
         return res.status(404).json({ message: "Surah not found." });
       }
-
       const imageRecords = files.map((file, index) => ({
         pageNumber: index + 1,
         imageFileId: file.id,
       }));
-
       await surah.updateOne({ $push: { images: { $each: imageRecords } } });
-
       res.status(200).json({
         message: "Images uploaded successfully",
-        count: files.length,
       });
     } catch (error) {
       console.error("Upload error:", error);
@@ -765,42 +765,50 @@ export const getSurahImages = [
     const { surahNumber } = req.params;
 
     try {
-      const surah = await Surah.findOne({ surahNumber }, { images: 1 });
-
+      const surah = await Surah.findOne({ surahNumber });
       if (!surah) {
         return res.status(404).json({ message: "Surah not found." });
       }
 
-      const imageFileIds = surah.images.map(
-        (image) => new mongoose.Types.ObjectId(image.imageFileId)
+      const sortedImages = surah.images.sort(
+        (a, b) => a.pageNumber - b.pageNumber
       );
 
-      const files = await gfsImage
-        .find({ _id: { $in: imageFileIds } })
-        .toArray();
+      const imageFileIds = sortedImages.map((image) => image.imageFileId);
 
-      if (!files || files.length === 0) {
-        return res.status(404).json({ message: "Images not found." });
-      }
+      const imagesPromise = imageFileIds.map(
+        (id) =>
+          new Promise((resolve, reject) => {
+            console.log("Image ID:", id);
+            const chunks = [];
+            const downloadStream = gfsImage.openDownloadStream(id);
 
-      const images = files.map((file) => {
-        const { filename, contentType, uploadDate } = file;
-        return {
-          filename,
-          contentType,
-          uploadDate,
-        };
-      });
+            downloadStream
+              .on("data", (chunk) => {
+                chunks.push(chunk);
+              })
+              .on("end", () => {
+                const buffer = Buffer.concat(chunks);
+                resolve(buffer);
+              })
+              .on("error", (error) => {
+                reject(error);
+              });
+          })
+      );
 
-      const imagesWithPageNumbers = surah.images.map((image, index) => ({
-        pageNumber: image.pageNumber,
-        image: images[index],
+      const images = await Promise.all(imagesPromise);
+
+      const imageData = images.map((buffer) => ({
+        image: `data:image/jpeg;base64,${buffer.toString("base64")}`,
       }));
 
-      res.status(200).json({ images: imagesWithPageNumbers });
+      res.status(200).json({
+        images: imageData,
+      });
     } catch (error) {
       console.error("Error fetching images:", error);
-      res.status(500).json({ message: "Failed to fetch images." });
+      res.status(500).json({ message: "Error fetching images." });
     }
   },
 ];
@@ -817,9 +825,7 @@ export const deleteSurahImages = [
         return res.status(404).json({ message: "Surah not found." });
       }
 
-      const imageFileIds = surah.images.map(
-        (image) => new mongoose.Types.ObjectId(image.imageFileId)
-      );
+      const imageFileIds = surah.images.map((image) => image.imageFileId);
 
       gfsImage.delete({ _id: { $in: imageFileIds } }, (err) => {
         if (err) {

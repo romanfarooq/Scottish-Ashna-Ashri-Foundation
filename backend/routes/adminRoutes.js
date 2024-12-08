@@ -23,6 +23,7 @@ import {
   deleteSurahImages,
   deleteTranslation,
   getAllSurahs,
+  getAllSurahsWithImages,
   getAyahAudio,
   getSurahAudio,
   getSurahByNumber,
@@ -45,6 +46,7 @@ router.get("/about", isAuthenticatedAdmin, getAbout);
 router.post("/about", isAuthenticatedAdmin, updateAbout);
 
 router.get("/surahs", isAuthenticatedAdmin, getAllSurahs);
+router.get("/surahsWithImages", isAuthenticatedAdmin, getAllSurahsWithImages);
 router.get("/surahs/:surahNumber", isAuthenticatedAdmin, getSurahByNumber);
 router.post("/surahs", isAuthenticatedAdmin, addSurah);
 router.put("/surahs/:surahNumber", isAuthenticatedAdmin, updateSurah);

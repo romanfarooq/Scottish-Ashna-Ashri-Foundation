@@ -1,6 +1,15 @@
 import toast from "react-hot-toast";
 import { useState, useEffect, useCallback } from "react";
-import { Search, FileAudio, Upload, Trash2, Loader2, Eye } from "lucide-react";
+import {
+  Search,
+  Upload,
+  Trash2,
+  Loader2,
+  Eye,
+  Image,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,6 +17,19 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -17,16 +39,15 @@ export function QuranImagesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredSurahs, setFilteredSurahs] = useState([]);
   const [images, setImages] = useState([]);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [selectedZipFile, setSelectedZipFile] = useState(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [selectedSurahNumber, setSelectedSurahNumber] = useState(null);
 
   const fetchSurahs = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/api/v1/admin/surahs`, {
+      const response = await fetch(`${API_URL}/api/v1/admin/surahsWithImages`, {
         credentials: "include",
       });
       const data = await response.json();
@@ -59,35 +80,10 @@ export function QuranImagesPage() {
     setFilteredSurahs(filtered);
   }, [searchTerm, surahs]);
 
-  const handleViewImage = (image, index) => {
-    setSelectedImage(image);
-    setCurrentImageIndex(index);
-    setIsViewDialogOpen(true);
-  };
-
-  const handleNextImage = () => {
-    if (currentImageIndex < images.length - 1) {
-      setCurrentImageIndex((prevIndex) => prevIndex + 1);
-      setSelectedImage(images[currentImageIndex + 1]);
-    }
-  };
-
-  const handlePreviousImage = () => {
-    if (currentImageIndex > 0) {
-      setCurrentImageIndex((prevIndex) => prevIndex - 1);
-      setSelectedImage(images[currentImageIndex - 1]);
-    }
-  };
-
-  const fetchSurahImages = async (surahNumber) => {
-    if (!surahNumber) {
-      toast.error("Please enter a Surah number");
-      return;
-    }
-
+  const handleViewImages = async (surahNumber) => {
     try {
       const response = await fetch(
-        `${API_URL}/api/surahs/${surahNumber}/images`,
+        `${API_URL}/api/v1/admin/surahs/${surahNumber}/images`,
         {
           credentials: "include",
         },
@@ -98,30 +94,56 @@ export function QuranImagesPage() {
         return;
       }
       setImages(data.images);
-      toast.success(
-        `Retrieved ${data.images.length} images for Surah ${surahNumber}`,
-      );
+      setSelectedSurahNumber(surahNumber);
+      setCurrentImageIndex(0);
+      setSelectedImage(data.images[0]);
+      setIsViewDialogOpen(true);
     } catch (error) {
       toast.error("Failed to fetch surah images");
     }
   };
 
-  const handleImageUpload = async (surahNumber) => {
+  const handleNextImage = () => {
+    if (currentImageIndex < images.length - 1) {
+      const nextIndex = currentImageIndex + 1;
+      setCurrentImageIndex(nextIndex);
+      setSelectedImage(images[nextIndex]);
+    }
+  };
+
+  const handlePreviousImage = () => {
+    if (currentImageIndex > 0) {
+      const prevIndex = currentImageIndex - 1;
+      setCurrentImageIndex(prevIndex);
+      setSelectedImage(images[prevIndex]);
+    }
+  };
+
+  const handlePageSelect = (pageIndex) => {
+    const index = parseInt(pageIndex);
+    setCurrentImageIndex(index);
+    setSelectedImage(images[index]);
+  };
+
+  const handleImageUpload = async (surahNumber, e) => {
+    const files = e.target.files;
+
+    if (!files.length) {
+      return;
+    }
+
     const formData = new FormData();
-    Array.from(selectedFile).forEach((file) => {
+    Array.from(files).forEach((file) => {
       formData.append("images", file);
     });
 
     try {
       const response = await fetch(
-        `${API_URL}/api/surahs/${surahNumber}/images`,
+        `${API_URL}/api/v1/admin/surahs/${surahNumber}/images`,
         {
           method: "POST",
           body: formData,
           credentials: "include",
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
         },
       );
 
@@ -132,36 +154,10 @@ export function QuranImagesPage() {
       }
 
       toast.success(data.message);
-      fetchSurahImages();
+      fetchSurahs();
     } catch (error) {
+      console.error(error);
       toast.error("Failed to upload images");
-    }
-  };
-
-  const handleDownload = async (surahNumber) => {
-    if (!surahNumber) {
-      toast.error("Please enter a Surah number");
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `${API_URL}/api/surahs/${surahNumber}/images/download`,
-        {
-          credentials: "include",
-        },
-      );
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `Surah_${surahNumber}_Pages.zip`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-
-      toast.success("Images downloaded successfully");
-    } catch (error) {
-      toast.error("Failed to download surah images");
     }
   };
 
@@ -200,8 +196,8 @@ export function QuranImagesPage() {
       <div className="container mx-auto max-w-6xl">
         <div className="mb-8 flex items-center justify-between border-b border-gray-200 pb-4">
           <h1 className="flex items-center text-2xl font-semibold text-gray-800">
-            <FileAudio className="mr-3 text-gray-600" />
-            Quran Audio Management
+            <Image className="mr-2 h-8 w-8 text-gray-600" />
+            Quran Surah Management - Images
           </h1>
           <div className="relative w-80">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -237,8 +233,9 @@ export function QuranImagesPage() {
                       <Button
                         variant="outline"
                         size="icon"
+                        disabled={!surah.images.length}
                         className="bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700"
-                        onClick={null}
+                        onClick={() => handleViewImages(surah.surahNumber)}
                       >
                         <Eye size={16} />
                       </Button>
@@ -250,13 +247,26 @@ export function QuranImagesPage() {
                       View Images
                     </TooltipContent>
                   </Tooltip>
+                  <Input
+                    id={`image-upload-${surah.surahNumber}`}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => handleImageUpload(surah.surahNumber, e)}
+                    className="hidden"
+                  />
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         variant="outline"
                         size="icon"
+                        disabled={!!surah.images.length}
+                        onClick={() =>
+                          document
+                            .getElementById(`image-upload-${surah.surahNumber}`)
+                            .click()
+                        }
                         className="bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700"
-                        onClick={() => handleImageUpload(surah.surahNumber)}
                       >
                         <Upload size={16} />
                       </Button>
@@ -273,6 +283,7 @@ export function QuranImagesPage() {
                       <Button
                         variant="destructive"
                         size="icon"
+                        disabled={!surah.images.length}
                         className="hover:bg-red-600"
                         onClick={() => handleDeleteImages(surah.surahNumber)}
                       >
@@ -291,6 +302,68 @@ export function QuranImagesPage() {
             </div>
           ))}
         </div>
+        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>
+                Surah {selectedSurahNumber} - Page Viewer
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col items-center">
+              {/* Image Display */}
+              <div className="relative mb-4 flex items-center">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handlePreviousImage}
+                  disabled={currentImageIndex === 0}
+                  className="mr-4"
+                >
+                  <ChevronLeft size={24} />
+                </Button>
+                <img
+                  src={selectedImage}
+                  alt={`Surah ${selectedSurahNumber} - Page ${
+                    currentImageIndex + 1
+                  }`}
+                  className="max-h-[70vh] max-w-full object-contain"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleNextImage}
+                  disabled={currentImageIndex === images.length - 1}
+                  className="ml-4"
+                >
+                  <ChevronRight size={24} />
+                </Button>
+              </div>
+              
+              {/* Page Selector */}
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-600">Go to Page:</span>
+                <Select
+                  value={currentImageIndex.toString()}
+                  onValueChange={handlePageSelect}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select Page" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {images.map((_, index) => (
+                      <SelectItem key={index} value={index.toString()}>
+                        Page {index + 1}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <span className="text-sm text-gray-600">
+                  {currentImageIndex + 1} / {images.length}
+                </span>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

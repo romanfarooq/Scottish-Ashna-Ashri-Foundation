@@ -22,6 +22,7 @@ import {
   deleteSurahAudio,
   deleteSurahImages,
   deleteTranslation,
+  downloadSurahImagesZip,
   getAllSurahs,
   getAllSurahsWithImages,
   getAyahAudio,
@@ -102,6 +103,11 @@ router.delete(
   "/surahs/:surahNumber/images",
   isAuthenticatedAdmin,
   deleteSurahImages
+);
+router.get(
+  "/surahs/:surahNumber/images/download",
+  isAuthenticatedAdmin,
+  downloadSurahImagesZip
 );
 
 export default router;

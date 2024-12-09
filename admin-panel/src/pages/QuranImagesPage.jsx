@@ -9,6 +9,7 @@ import {
   Image,
   ChevronLeft,
   ChevronRight,
+  Download,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -183,6 +184,41 @@ export function QuranImagesPage() {
     }
   };
 
+  const handleDownloadSurahImages = async (surahNumber) => {
+    try {
+      setLoading(true);
+
+      const response = await fetch(
+        `${API_URL}/api/v1/admin/surahs/${surahNumber}/images/download`,
+        {
+          credentials: "include",
+        },
+      );
+
+      if (!response.ok) {
+        toast.error("Failed to download images");
+        return;
+      }
+
+      const blob = await response.blob();
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `surah_${surahNumber}_images.zip`);
+      document.body.appendChild(link);
+      link.click();
+
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Download error:", err);
+      toast.error("Failed to download images");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex h-full min-h-screen flex-col items-center justify-center bg-gray-50">
@@ -246,6 +282,27 @@ export function QuranImagesPage() {
                       className="rounded-md border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs text-gray-700 shadow-sm"
                     >
                       View Images
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        disabled={!surah.images.length}
+                        className="bg-yellow-50 text-yellow-600 hover:bg-yellow-100 hover:text-yellow-700"
+                        onClick={() =>
+                          handleDownloadSurahImages(surah.surahNumber)
+                        }
+                      >
+                        <Download size={16} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="bottom"
+                      className="rounded-md border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs text-gray-700 shadow-sm"
+                    >
+                      Download Images
                     </TooltipContent>
                   </Tooltip>
                   <Input

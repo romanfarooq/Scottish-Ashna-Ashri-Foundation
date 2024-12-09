@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import archiver from "archiver";
 import Surah from "../models/Surah.js";
 import { gfsAudio, gfsImage } from "../config/db.js";
 import { body, param, validationResult } from "express-validator";
@@ -848,33 +849,47 @@ export const deleteSurahImages = [
   },
 ];
 
-// const { surahNumber } = req.params;
+export const downloadSurahImagesZip = [
+  validateSurahNumber,
+  handleValidationErrors,
+  async (req, res) => {
+    const { surahNumber } = req.params;
 
-//   try {
-//     const surah = await Surah.findOne({ surahNumber });
-//     if (!surah) {
-//       return res.status(404).json({ message: "Surah not found." });
-//     }
+    try {
+      const surah = await Surah.findOne({ surahNumber });
+      if (!surah) {
+        return res.status(404).json({ message: "Surah not found." });
+      }
 
-//     const imageFileIds = surah.images.map((image) => image.imageFileId);
+      const imageFileIds = surah.images.map((image) => image.imageFileId);
 
-//     const bucket = new GridFSBucket(mongoose.connection.db, {
-//       bucketName: "image",
-//     });
+      const archive = archiver("zip");
+      archive.pipe(res);
+      for (const [index, id] of imageFileIds.entries()) {
+        try {
+          const files = await gfsImage.find({ _id: id }).toArray();
 
-//     // Create a zip archive
-//     res.setHeader("Content-Type", "application/zip");
-//     res.setHeader(
-//       "Content-Disposition",
-//       `attachment; filename="surah_${surahNumber}_images.zip"`
-//     );
+          if (!files || files.length === 0) {
+            console.warn(`Image not found for ID: ${id}`);
+            continue;
+          }
 
-//     const archive = archiver("zip");
-//     archive.pipe(res);
+          const file = files[0];
+          const mimeType = file.contentType;
+          const downloadStream = gfsImage.openDownloadStream(id);
 
-//     for (const id of imageFileIds) {
-//       const stream = bucket.openDownloadStream(new ObjectId(id));
-//       archive.append(stream, { name: `${id}.jpg` }); // Adjust file name and extension if needed
-//     }
+          archive.append(downloadStream, {
+            name: `${index + 1}.${mimeType.split("/")[1]}`,
+          });
+        } catch (error) {
+          console.error(`Error processing image ${id}:`, error);
+        }
+      }
 
-//     await archive.finalize();
+      await archive.finalize();
+    } catch (error) {
+      console.error("Error downloading images:", error);
+      res.status(500).json({ message: "Failed to download images." });
+    }
+  },
+];

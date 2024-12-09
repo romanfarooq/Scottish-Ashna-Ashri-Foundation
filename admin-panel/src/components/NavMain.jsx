@@ -6,6 +6,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import {
+  SidebarContent,
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
@@ -16,27 +17,15 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 
-// items: {
-//     title: string
-//     url: string
-//     icon?: LucideIcon
-//     isActive?: boolean
-//     items?: {
-//     title: string
-//     url: string
-//     }
-// }
-
 export function NavMain({ menuItems }) {
   return (
-    <>
+    <SidebarContent>
       {menuItems.map((group) => (
         <SidebarGroup key={group.label}>
           <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
           <SidebarMenu>
             {group.items.map((item) =>
               item.items ? (
-                // Render Collapsible if item has children
                 <Collapsible
                   key={item.title}
                   asChild
@@ -68,7 +57,6 @@ export function NavMain({ menuItems }) {
                   </SidebarMenuItem>
                 </Collapsible>
               ) : (
-                // Render simple button if no children
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <Link to={item.url}>
@@ -82,6 +70,6 @@ export function NavMain({ menuItems }) {
           </SidebarMenu>
         </SidebarGroup>
       ))}
-    </>
+    </SidebarContent>
   );
 }

@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import archiver from "archiver";
 import Surah from "../models/Surah.js";
+import Tajweed from "../models/Tajweed.js";
 import { gfsAudio, gfsImage } from "../config/db.js";
 import { body, param, validationResult } from "express-validator";
 
@@ -353,6 +354,26 @@ export const deleteSurah = [
           gfsAudio.delete(ayah.audioFileId, (err) => {
             if (err) {
               console.error("Error deleting audio from GridFS:", err);
+            }
+          });
+        }
+      }
+
+      for (const image of surah.images) {
+        if (image.imageFileId) {
+          gfsImage.delete(image.imageFileId, (err) => {
+            if (err) {
+              console.error("Error deleting image from GridFS:", err);
+            }
+          });
+        }
+      }
+
+      for (const image of surah.tajweedImages) {
+        if (image.imageFileId) {
+          gfsImage.delete(image.imageFileId, (err) => {
+            if (err) {
+              console.error("Error deleting image from GridFS:", err);
             }
           });
         }
@@ -856,10 +877,8 @@ export const deleteSurahImages = [
         return res.status(404).json({ message: "Surah not found." });
       }
 
-      const imageFileIds = surah.images.map((image) => image.imageFileId);
-
-      for (const id of imageFileIds) {
-        gfsImage.delete(id, (err) => {
+      for (const image of surah.images) {
+        gfsImage.delete(image.imageFileId, (err) => {
           if (err) {
             console.error("Error deleting image from GridFS:", err);
           }
@@ -1020,12 +1039,8 @@ export const deleteSurahTajweedImages = [
         return res.status(404).json({ message: "Surah not found." });
       }
 
-      const imageFileIds = surah.tajweedImages.map(
-        (image) => image.imageFileId
-      );
-
-      for (const id of imageFileIds) {
-        gfsImage.delete(id, (err) => {
+      for (const image of surah.tajweedImages) {
+        gfsImage.delete(image.imageFileId, (err) => {
           if (err) {
             console.error("Error deleting image from GridFS:", err);
           }
@@ -1089,3 +1104,74 @@ export const downloadSurahTajweedImagesZip = [
     }
   },
 ];
+
+export const AddTajweedRuleImage = async (req, res) => {
+  const file = req.file;
+  if (!file) {
+    return res.status(400).json({ message: "No file uploaded." });
+  }
+  try {
+    const newRule = new Tajweed({
+      imageFileId: new mongoose.Types.ObjectId(file.id),
+    });
+    await newRule.save();
+    res.status(200).json({ message: "Rule image uploaded successfully." });
+  } catch (error) {
+    console.error("Error uploading rule image:", error);
+    res.status(500).json({ message: "Failed to upload rule image." });
+  }
+};
+
+export const deleteTajweedRuleImage = async (req, res) => {
+  try {
+    const rule = await Tajweed.findOne();
+    if (!rule) {
+      return res.status(404).json({ message: "Rule image not found." });
+    }
+
+    gfsImage.delete(rule.imageFileId, (err) => {
+      if (err) {
+        console.error("Error deleting rule image from GridFS:", err);
+      }
+    });
+
+    await rule.deleteOne();
+
+    res.status(200).json({ message: "Rule image deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting rule image:", error);
+    res.status(500).json({ message: "Failed to delete rule image." });
+  }
+};
+
+export const getTajweedRuleImage = async (req, res) => {
+  try {
+    const rule = await Tajweed.findOne();
+    if (!rule || !rule.imageFileId) {
+      return res.status(404).json({ message: "Rule image not found." });
+    }
+
+    const files = await gfsImage.find({ _id: rule.imageFileId }).toArray();
+    if (!files || files.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "Rule image metadata not found." });
+    }
+
+    const file = files[0];
+    const mimeType = file.contentType;
+
+    const downloadStream = gfsImage.openDownloadStream(rule.imageFileId);
+
+    downloadStream.on("error", (err) => {
+      console.error("Error reading image from GridFS:", err);
+      res.status(500).json({ message: "Failed to retrieve rule image." });
+    });
+
+    res.set("Content-Type", mimeType);
+    downloadStream.pipe(res);
+  } catch (error) {
+    console.error("Error retrieving rule image:", error);
+    res.status(500).json({ message: "Failed to retrieve rule image." });
+  }
+};

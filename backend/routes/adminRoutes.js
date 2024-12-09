@@ -22,6 +22,7 @@ import {
   deleteSurahAudio,
   deleteSurahImages,
   deleteSurahTajweedImages,
+  deleteTajweedRuleImage,
   deleteTranslation,
   downloadSurahImagesZip,
   downloadSurahTajweedImagesZip,
@@ -33,9 +34,11 @@ import {
   getSurahByNumber,
   getSurahImages,
   getSurahTajweedImages,
+  getTajweedRuleImage,
   updateSurah,
   uploadSurahImages,
   uploadSurahTajweedImages,
+  AddTajweedRuleImage,
 } from "../controllers/surahController.js";
 
 const router = Router();
@@ -139,6 +142,18 @@ router.get(
   "/surahs/:surahNumber/tajweedImages/download",
   isAuthenticatedAdmin,
   downloadSurahTajweedImagesZip
+);
+router.get("/tajweed-rule-image", isAuthenticatedAdmin, getTajweedRuleImage);
+router.post(
+  "/tajweed-rule-image",
+  isAuthenticatedAdmin,
+  imageUpload.single("image"),
+  AddTajweedRuleImage
+);
+router.delete(
+  "/tajweed-rule-image",
+  isAuthenticatedAdmin,
+  deleteTajweedRuleImage
 );
 
 export default router;

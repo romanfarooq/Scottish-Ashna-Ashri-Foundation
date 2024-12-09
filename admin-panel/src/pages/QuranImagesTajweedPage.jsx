@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  BookOpen,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -44,13 +45,38 @@ export function QuranImagesTajweedPage() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedSurahNumber, setSelectedSurahNumber] = useState(null);
+  const [tajweedRuleImage, setTajweedRuleImage] = useState(null);
+
+  const fetchTajweedRuleImage = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `${API_URL}/api/v1/admin/tajweed-rule-image`,
+        {
+          credentials: "include",
+        },
+      );
+
+      if (response.ok) {
+        const blob = await response.blob();
+        setTajweedRuleImage(URL.createObjectURL(blob));
+      } else {
+        setTajweedRuleImage(null);
+      }
+    } catch (error) {
+      toast.error("Failed to fetch Tajweed Rule Image");
+      setTajweedRuleImage(null);
+    }
+  }, []);
 
   const fetchSurahs = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/api/v1/admin/surahsWithTajweedImages`, {
-        credentials: "include",
-      });
+      const response = await fetch(
+        `${API_URL}/api/v1/admin/surahsWithTajweedImages`,
+        {
+          credentials: "include",
+        },
+      );
       const data = await response.json();
       if (!response.ok) {
         toast.error(data.message);
@@ -67,7 +93,8 @@ export function QuranImagesTajweedPage() {
 
   useEffect(() => {
     fetchSurahs();
-  }, [fetchSurahs]);
+    fetchTajweedRuleImage();
+  }, [fetchSurahs, fetchTajweedRuleImage]);
 
   useEffect(() => {
     const filtered = surahs.filter((surah) => {
@@ -80,6 +107,91 @@ export function QuranImagesTajweedPage() {
     });
     setFilteredSurahs(filtered);
   }, [searchTerm, surahs]);
+
+  const handleUploadTajweedRuleImage = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const response = await fetch(
+        `${API_URL}/api/v1/admin/tajweed-rule-image`,
+        {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        },
+      );
+
+      const data = await response.json();
+      if (!response.ok) {
+        toast.error(data.message);
+        return;
+      }
+
+      toast.success(data.message);
+      fetchTajweedRuleImage();
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to upload Tajweed Rule Image");
+    }
+  };
+
+  const handleDownloadTajweedRuleImage = async () => {
+    try {
+      const response = await fetch(
+        `${API_URL}/api/v1/admin/tajweed-rule-image/`,
+        {
+          credentials: "include",
+        },
+      );
+
+      if (!response.ok) {
+        toast.error("Failed to download Tajweed Rule Image");
+        return;
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "tajweed_rule_image.jpg");
+      document.body.appendChild(link);
+      link.click();
+
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("Tajweed Rule Image downloaded successfully");
+    } catch (err) {
+      console.error("Download error:", err);
+      toast.error("Failed to download Tajweed Rule Image");
+    }
+  };
+
+  const handleDeleteTajweedRuleImage = async () => {
+    try {
+      const response = await fetch(
+        `${API_URL}/api/v1/admin/tajweed-rule-image`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        },
+      );
+
+      const data = await response.json();
+      if (!response.ok) {
+        toast.error(data.message);
+        return;
+      }
+
+      toast.success(data.message);
+      setTajweedRuleImage(null);
+    } catch (error) {
+      toast.error("Failed to delete Tajweed Rule Image");
+    }
+  };
 
   const handleViewImages = async (surahNumber) => {
     try {
@@ -232,6 +344,99 @@ export function QuranImagesTajweedPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="container mx-auto max-w-6xl">
+        <div className="mb-8 rounded-lg border border-gray-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-gray-100 p-4">
+            <div className="flex items-center space-x-4">
+              <BookOpen className="h-8 w-8 text-gray-600" />
+              <h2 className="text-xl font-semibold text-gray-800">
+                Tajweed Rule Image
+              </h2>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    disabled={!tajweedRuleImage}
+                    onClick={handleDownloadTajweedRuleImage}
+                    className="bg-yellow-50 text-yellow-600 hover:bg-yellow-100 hover:text-yellow-700"
+                  >
+                    <Download size={16} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="bottom"
+                  className="rounded-md border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs text-gray-700 shadow-sm"
+                >
+                  Download Rule Image
+                </TooltipContent>
+              </Tooltip>
+              <Input
+                id="tajweed-rule-image-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleUploadTajweedRuleImage}
+                className="hidden"
+              />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    disabled={!!tajweedRuleImage}
+                    onClick={() =>
+                      document
+                        .getElementById("tajweed-rule-image-upload")
+                        .click()
+                    }
+                    className="bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700"
+                  >
+                    <Upload size={16} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="bottom"
+                  className="rounded-md border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs text-gray-700 shadow-sm"
+                >
+                  Upload Rule Image
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    disabled={!tajweedRuleImage}
+                    onClick={handleDeleteTajweedRuleImage}
+                    className="hover:bg-red-600"
+                  >
+                    <Trash2 size={16} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="bottom"
+                  className="rounded-md border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs text-gray-700 shadow-sm"
+                >
+                  Delete Rule Image
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
+          {tajweedRuleImage ? (
+            <div className="p-4">
+              <img
+                src={tajweedRuleImage}
+                alt="Tajweed Rule"
+                className="mx-auto max-h-[300px] object-contain"
+              />
+            </div>
+          ) : (
+            <div className="p-4 text-center text-gray-500">
+              No Tajweed Rule Image uploaded
+            </div>
+          )}
+        </div>
         <div className="mb-8 flex items-center justify-between border-b border-gray-200 pb-4">
           <h1 className="flex items-center text-2xl font-semibold text-gray-800">
             <Image className="mr-2 h-8 w-8 text-gray-600" />

@@ -285,7 +285,7 @@ export function SurahTextPage() {
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
           <Loader2 className="mx-auto mb-4 h-16 w-16 animate-spin text-blue-600" />
-          <p className="text-xl font-medium text-gray-700">Loading Surah...</p>
+          <p className="text-xl font-medium text-gray-700">Loading...</p>
         </div>
       </div>
     );

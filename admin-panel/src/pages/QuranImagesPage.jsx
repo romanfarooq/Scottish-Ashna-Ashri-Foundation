@@ -224,7 +224,7 @@ export function QuranImagesPage() {
     return (
       <div className="flex h-full min-h-screen flex-col items-center justify-center bg-gray-50">
         <Loader2 className="h-16 w-16 animate-spin text-blue-600" />
-        <p className="mt-4 text-xl text-gray-600">Loading Surahs...</p>
+        <p className="mt-4 text-xl text-gray-600">Loading...</p>
       </div>
     );
   }

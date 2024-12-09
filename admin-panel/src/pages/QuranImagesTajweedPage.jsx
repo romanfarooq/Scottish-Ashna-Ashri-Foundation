@@ -211,6 +211,7 @@ export function QuranImagesTajweedPage() {
 
       link.remove();
       window.URL.revokeObjectURL(url);
+      toast.success("Images downloaded successfully");
     } catch (err) {
       console.error("Download error:", err);
       toast.error("Failed to download images");

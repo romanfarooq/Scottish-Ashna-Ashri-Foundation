@@ -114,7 +114,7 @@ const menuItems = [
       },
       {
         title: "Dua's",
-        url: "#",
+        url: "/dua",
         icon: BookOpen,
       },
       {

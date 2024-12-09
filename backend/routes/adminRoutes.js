@@ -3,6 +3,18 @@ import { audioUpload, imageUpload } from "../config/upload.js";
 import { isAuthenticatedAdmin } from "../middleware/authMiddleware.js";
 import { getAbout, updateAbout } from "../controllers/aboutController.js";
 import {
+  addDua,
+  addDuaTranslation,
+  deleteDua,
+  deleteDuaAudio,
+  getAllDuas,
+  getDuaAudio,
+  getDuaById,
+  updateDua,
+  updateDuaTranslation,
+  uploadDuaAudio,
+} from "../controllers/duaController.js";
+import {
   login,
   logout,
   changePassword,
@@ -154,6 +166,35 @@ router.delete(
   "/tajweed-rule-image",
   isAuthenticatedAdmin,
   deleteTajweedRuleImage
+);
+
+router.get("/duas", isAuthenticatedAdmin, getAllDuas);
+router.get("/duas/:id", isAuthenticatedAdmin, getDuaById);
+router.post("/duas", isAuthenticatedAdmin, addDua);
+router.put("/duas/:id", isAuthenticatedAdmin, updateDua);
+router.delete("/duas/:id", isAuthenticatedAdmin, deleteDua);
+router.get("/duas/:id/audio", isAuthenticatedAdmin, getDuaAudio);
+router.post(
+  "/duas/:id/audio",
+  isAuthenticatedAdmin,
+  audioUpload.single("audio"),
+  uploadDuaAudio
+);
+router.delete("/duas/:id/audio", isAuthenticatedAdmin, deleteDuaAudio);
+router.post(
+  "/duas/:id/transliterations",
+  isAuthenticatedAdmin,
+  addDuaTranslation
+);
+router.put(
+  "/duas/:id/transliterations/:language",
+  isAuthenticatedAdmin,
+  updateDuaTranslation
+);
+router.delete(
+  "/duas/:id/transliterations/:language",
+  isAuthenticatedAdmin,
+  deleteTranslation
 );
 
 export default router;

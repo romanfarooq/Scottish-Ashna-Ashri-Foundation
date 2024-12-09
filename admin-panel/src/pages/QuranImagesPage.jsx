@@ -235,7 +235,7 @@ export function QuranImagesPage() {
         <div className="mb-8 flex items-center justify-between border-b border-gray-200 pb-4">
           <h1 className="flex items-center text-2xl font-semibold text-gray-800">
             <Image className="mr-2 h-8 w-8 text-gray-600" />
-            Quran Surah Management - Images
+            Surah Management - Images
           </h1>
           <div className="relative w-80">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />

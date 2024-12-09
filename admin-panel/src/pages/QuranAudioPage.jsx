@@ -135,7 +135,7 @@ export function QuranAudioPage() {
         <div className="mb-8 flex items-center justify-between border-b border-gray-200 pb-4">
           <h1 className="flex items-center text-2xl font-semibold text-gray-800">
             <FileAudio className="mr-3 text-gray-600" />
-            Quran Audio Management
+            Surah Audio Management
           </h1>
           <div className="relative w-80">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />

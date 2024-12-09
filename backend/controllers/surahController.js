@@ -195,7 +195,7 @@ export const getAllSurahs = async (req, res) => {
   try {
     const surahs = await Surah.find(
       {},
-      { _id: 0, __v: 0, ayat: 0, translations: 0, images: 0, tajweedImages: 0 }
+      { ayat: 0, translations: 0, images: 0, tajweedImages: 0 }
     );
     res.status(200).json({ surahs });
   } catch (error) {
@@ -208,12 +208,9 @@ export const getAllSurahsWithImages = async (req, res) => {
     const surahs = await Surah.find(
       {},
       {
-        _id: 0,
-        __v: 0,
         ayat: 0,
         translations: 0,
         tajweedImages: 0,
-        "images._id": 0,
       }
     );
     res.status(200).json({ surahs });
@@ -227,12 +224,9 @@ export const getAllSurahsWithTajweedImages = async (req, res) => {
     const surahs = await Surah.find(
       {},
       {
-        _id: 0,
-        __v: 0,
         ayat: 0,
         translations: 0,
         images: 0,
-        "tajweedImages._id": 0,
       }
     );
     res.status(200).json({ surahs });
@@ -250,13 +244,8 @@ export const getSurahByNumber = [
       const surah = await Surah.findOne(
         { surahNumber: parseInt(surahNumber, 10) },
         {
-          _id: 0,
-          __v: 0,
           images: 0,
           tajweedImages: 0,
-          "ayat._id": 0,
-          "translations._id": 0,
-          "translations.translation._id": 0,
         }
       );
       if (!surah) {

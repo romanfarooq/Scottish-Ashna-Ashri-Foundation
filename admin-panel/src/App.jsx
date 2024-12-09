@@ -14,6 +14,8 @@ import { SurahTextPage } from "./pages/SurahTextPage";
 import { QuranAudioPage } from "./pages/QuranAudioPage";
 import { QuranImagesPage } from "./pages/QuranImagesPage";
 import { QuranImagesTajweedPage } from "./pages/QuranImagesTajweedPage";
+import { DuaPage } from "./pages/DuaPage";
+import { DuaDetailPage } from "./pages/DuaDetailPage";
 
 const router = createBrowserRouter([
   {
@@ -46,6 +48,14 @@ const router = createBrowserRouter([
           {
             path: "quran-tajweed-images",
             element: <QuranImagesTajweedPage />,
+          },
+          {
+            path: "dua",
+            element: <DuaPage />,
+          },
+          {
+            path: "dua-details/:duaId",
+            element: <DuaDetailPage />,
           }
         ],
       },

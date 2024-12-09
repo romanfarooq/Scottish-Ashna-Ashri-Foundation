@@ -1,5 +1,14 @@
 import mongoose from "mongoose";
 
+const SurahImageTajweedSchema = new mongoose.Schema({
+  pageNumber: { type: Number, required: true },
+  imageFileId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "image.files",
+    required: true,
+  },
+});
+
 const SurahImageSchema = new mongoose.Schema({
   pageNumber: { type: Number, required: true },
   imageFileId: {
@@ -35,6 +44,7 @@ const SurahSchema = new mongoose.Schema({
   translations: [TranslationSchema],
   ayat: [AyahSchema],
   images: [SurahImageSchema],
+  tajweedImages: [SurahImageTajweedSchema],
 });
 
 const Surah = mongoose.models.Surah || mongoose.model("Surah", SurahSchema);

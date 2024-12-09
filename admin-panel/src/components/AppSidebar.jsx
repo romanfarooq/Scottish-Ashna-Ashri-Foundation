@@ -77,7 +77,7 @@ const menuItems = [
           },
           {
             title: "Quran Color Coded Tajweed",
-            url: "#",
+            url: "/quran-tajweed-images",
             icon: Palette,
           },
           {

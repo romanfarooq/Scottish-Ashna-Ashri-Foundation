@@ -13,6 +13,7 @@ import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { SurahTextPage } from "./pages/SurahTextPage";
 import { QuranAudioPage } from "./pages/QuranAudioPage";
 import { QuranImagesPage } from "./pages/QuranImagesPage";
+import { QuranImagesTajweedPage } from "./pages/QuranImagesTajweedPage";
 
 const router = createBrowserRouter([
   {
@@ -41,6 +42,10 @@ const router = createBrowserRouter([
           {
             path: "quran-images",
             element: <QuranImagesPage />,
+          },
+          {
+            path: "quran-tajweed-images",
+            element: <QuranImagesTajweedPage />,
           }
         ],
       },

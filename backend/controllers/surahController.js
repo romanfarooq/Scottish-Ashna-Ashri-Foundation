@@ -194,7 +194,7 @@ export const getAllSurahs = async (req, res) => {
   try {
     const surahs = await Surah.find(
       {},
-      { _id: 0, __v: 0, ayat: 0, translations: 0, images: 0 }
+      { _id: 0, __v: 0, ayat: 0, translations: 0, images: 0, tajweedImages: 0 }
     );
     res.status(200).json({ surahs });
   } catch (error) {
@@ -206,7 +206,33 @@ export const getAllSurahsWithImages = async (req, res) => {
   try {
     const surahs = await Surah.find(
       {},
-      { _id: 0, __v: 0, ayat: 0, translations: 0, "images._id": 0 }
+      {
+        _id: 0,
+        __v: 0,
+        ayat: 0,
+        translations: 0,
+        tajweedImages: 0,
+        "images._id": 0,
+      }
+    );
+    res.status(200).json({ surahs });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch Surahs." });
+  }
+};
+
+export const getAllSurahsWithTajweedImages = async (req, res) => {
+  try {
+    const surahs = await Surah.find(
+      {},
+      {
+        _id: 0,
+        __v: 0,
+        ayat: 0,
+        translations: 0,
+        images: 0,
+        "tajweedImages._id": 0,
+      }
     );
     res.status(200).json({ surahs });
   } catch (error) {
@@ -226,6 +252,7 @@ export const getSurahByNumber = [
           _id: 0,
           __v: 0,
           images: 0,
+          tajweedImages: 0,
           "ayat._id": 0,
           "translations._id": 0,
           "translations.translation._id": 0,
@@ -865,6 +892,175 @@ export const downloadSurahImagesZip = [
 
       const archive = archiver("zip");
       archive.pipe(res);
+      for (const [index, id] of imageFileIds.entries()) {
+        try {
+          const files = await gfsImage.find({ _id: id }).toArray();
+
+          if (!files || files.length === 0) {
+            console.warn(`Image not found for ID: ${id}`);
+            continue;
+          }
+
+          const file = files[0];
+          const mimeType = file.contentType;
+          const downloadStream = gfsImage.openDownloadStream(id);
+
+          archive.append(downloadStream, {
+            name: `${index + 1}.${mimeType.split("/")[1]}`,
+          });
+        } catch (error) {
+          console.error(`Error processing image ${id}:`, error);
+        }
+      }
+
+      await archive.finalize();
+    } catch (error) {
+      console.error("Error downloading images:", error);
+      res.status(500).json({ message: "Failed to download images." });
+    }
+  },
+];
+
+export const uploadSurahTajweedImages = [
+  validateSurahImages,
+  handleValidationErrors,
+  async (req, res) => {
+    const { surahNumber } = req.params;
+    const files = req.files;
+    files.sort((a, b) => a.originalname.localeCompare(b.originalname));
+    try {
+      const surah = await Surah.findOne({ surahNumber });
+      if (!surah) {
+        return res.status(404).json({ message: "Surah not found." });
+      }
+      const imageRecords = files.map((file, index) => ({
+        pageNumber: index + 1,
+        imageFileId: file.id,
+      }));
+      await surah.updateOne({
+        $push: { tajweedImages: { $each: imageRecords } },
+      });
+      res.status(200).json({
+        message: "Images uploaded successfully",
+      });
+    } catch (error) {
+      console.error("Upload error:", error);
+      res.status(500).json({ message: "Failed to upload images" });
+    }
+  },
+];
+
+export const getSurahTajweedImages = [
+  validateSurahNumber,
+  handleValidationErrors,
+  async (req, res) => {
+    const { surahNumber } = req.params;
+
+    try {
+      const surah = await Surah.findOne({ surahNumber });
+      if (!surah) {
+        return res.status(404).json({ message: "Surah not found." });
+      }
+
+      const sortedImages = surah.tajweedImages.sort(
+        (a, b) => a.pageNumber - b.pageNumber
+      );
+
+      const imageFileIds = sortedImages.map((image) => image.imageFileId);
+
+      const imagesPromise = imageFileIds.map(
+        (id) =>
+          new Promise(async (resolve, reject) => {
+            let files;
+            try {
+              files = await gfsImage.find({ _id: id }).toArray();
+            } catch (err) {
+              reject(err);
+            }
+            if (!files || files.length === 0) {
+              return reject(new Error("Image metadata not found."));
+            }
+            const file = files[0];
+            const mimeType = file.contentType;
+            const chunks = [];
+            const downloadStream = gfsImage.openDownloadStream(id);
+
+            downloadStream
+              .on("data", (chunk) => {
+                chunks.push(chunk);
+              })
+              .on("end", () => {
+                const buffer = Buffer.concat(chunks).toString("base64");
+                resolve(`data:${mimeType};base64,${buffer}`);
+              })
+              .on("error", (error) => {
+                reject(error);
+              });
+          })
+      );
+
+      const images = await Promise.all(imagesPromise);
+
+      res.status(200).json({ images });
+    } catch (error) {
+      console.error("Error fetching images:", error);
+      res.status(500).json({ message: "Error fetching images." });
+    }
+  },
+];
+
+export const deleteSurahTajweedImages = [
+  validateSurahNumber,
+  handleValidationErrors,
+  async (req, res) => {
+    const { surahNumber } = req.params;
+    try {
+      const surah = await Surah.findOne({ surahNumber });
+      if (!surah) {
+        return res.status(404).json({ message: "Surah not found." });
+      }
+
+      const imageFileIds = surah.tajweedImages.map(
+        (image) => image.imageFileId
+      );
+
+      for (const id of imageFileIds) {
+        gfsImage.delete(id, (err) => {
+          if (err) {
+            console.error("Error deleting image from GridFS:", err);
+          }
+        });
+      }
+
+      await surah.updateOne({ $set: { tajweedImages: [] } });
+
+      res.status(200).json({ message: "Images deleted successfully." });
+    } catch (error) {
+      console.error("Error deleting images:", error);
+      res.status(500).json({ message: "Failed to delete images." });
+    }
+  },
+];
+
+export const downloadSurahTajweedImagesZip = [
+  validateSurahNumber,
+  handleValidationErrors,
+  async (req, res) => {
+    const { surahNumber } = req.params;
+
+    try {
+      const surah = await Surah.findOne({ surahNumber });
+      if (!surah) {
+        return res.status(404).json({ message: "Surah not found." });
+      }
+
+      const imageFileIds = surah.tajweedImages.map(
+        (image) => image.imageFileId
+      );
+
+      const archive = archiver("zip");
+      archive.pipe(res);
+
       for (const [index, id] of imageFileIds.entries()) {
         try {
           const files = await gfsImage.find({ _id: id }).toArray();

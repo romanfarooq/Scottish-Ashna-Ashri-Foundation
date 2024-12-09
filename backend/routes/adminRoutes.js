@@ -21,16 +21,21 @@ import {
   deleteSurah,
   deleteSurahAudio,
   deleteSurahImages,
+  deleteSurahTajweedImages,
   deleteTranslation,
   downloadSurahImagesZip,
+  downloadSurahTajweedImagesZip,
   getAllSurahs,
   getAllSurahsWithImages,
+  getAllSurahsWithTajweedImages,
   getAyahAudio,
   getSurahAudio,
   getSurahByNumber,
   getSurahImages,
+  getSurahTajweedImages,
   updateSurah,
   uploadSurahImages,
+  uploadSurahTajweedImages,
 } from "../controllers/surahController.js";
 
 const router = Router();
@@ -48,6 +53,11 @@ router.post("/about", isAuthenticatedAdmin, updateAbout);
 
 router.get("/surahs", isAuthenticatedAdmin, getAllSurahs);
 router.get("/surahsWithImages", isAuthenticatedAdmin, getAllSurahsWithImages);
+router.get(
+  "/surahsWithTajweedImages",
+  isAuthenticatedAdmin,
+  getAllSurahsWithTajweedImages
+);
 router.get("/surahs/:surahNumber", isAuthenticatedAdmin, getSurahByNumber);
 router.post("/surahs", isAuthenticatedAdmin, addSurah);
 router.put("/surahs/:surahNumber", isAuthenticatedAdmin, updateSurah);
@@ -108,6 +118,27 @@ router.get(
   "/surahs/:surahNumber/images/download",
   isAuthenticatedAdmin,
   downloadSurahImagesZip
+);
+router.get(
+  "/surahs/:surahNumber/tajweedImages",
+  isAuthenticatedAdmin,
+  getSurahTajweedImages
+);
+router.post(
+  "/surahs/:surahNumber/tajweedImages",
+  isAuthenticatedAdmin,
+  imageUpload.array("images"),
+  uploadSurahTajweedImages
+);
+router.delete(
+  "/surahs/:surahNumber/tajweedImages",
+  isAuthenticatedAdmin,
+  deleteSurahTajweedImages
+);
+router.get(
+  "/surahs/:surahNumber/tajweedImages/download",
+  isAuthenticatedAdmin,
+  downloadSurahTajweedImagesZip
 );
 
 export default router;

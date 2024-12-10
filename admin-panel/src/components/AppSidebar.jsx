@@ -154,7 +154,7 @@ const menuItems = [
       },
       {
         title: "Specific Dua's",
-        url: "#",
+        url: "/specific-dua",
         icon: BookOpen,
       },
       {

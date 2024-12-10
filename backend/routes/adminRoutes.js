@@ -105,7 +105,13 @@ import {
   updateSermonTranslation,
   deleteSermonTranslation,
 } from "../controllers/sermonController.js";
-
+import {
+  getAllSpecificDuas,
+  getSpecificDuaById,
+  addSpecificDua,
+  updateSpecificDua,
+  deleteSpecificDua,
+} from "../controllers/specificDuaController.js";
 
 const router = Router();
 
@@ -365,5 +371,10 @@ router.delete(
   deleteSermonTranslation
 );
 
+router.get("/specific-duas", isAuthenticatedAdmin, getAllSpecificDuas);
+router.get("/specific-duas/:id", isAuthenticatedAdmin, getSpecificDuaById);
+router.post("/specific-duas", isAuthenticatedAdmin, addSpecificDua);
+router.put("/specific-duas/:id", isAuthenticatedAdmin, updateSpecificDua);
+router.delete("/specific-duas/:id", isAuthenticatedAdmin, deleteSpecificDua);
 
 export default router;

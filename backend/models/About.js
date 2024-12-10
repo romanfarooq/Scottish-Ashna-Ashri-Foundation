@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const aboutUsSchema = new mongoose.Schema(
+const AboutUsSchema = new mongoose.Schema(
   {
     content: {
       type: String,
@@ -10,6 +10,6 @@ const aboutUsSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const About = mongoose.model("About", aboutUsSchema);
+const About = mongoose.models.About || mongoose.model("About", AboutUsSchema);
 
 export default About;

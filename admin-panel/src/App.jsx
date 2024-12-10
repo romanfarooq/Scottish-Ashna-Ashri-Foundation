@@ -24,6 +24,8 @@ import { SahifaPage } from "./pages/SahifaPage";
 import { SahifaDetailPage } from "./pages/SahifaDetailsPage";
 import { SermonPage } from "./pages/SermonPage";
 import { SermonDetailPage } from "./pages/SermonDetailsPage";
+import { SpecificDuaPage } from "./pages/SpecificDuaPage";
+import { SpecificDuaDetailsPage } from "./pages/SpecificDuaDetailsPage";
 
 const router = createBrowserRouter([
   {
@@ -96,6 +98,14 @@ const router = createBrowserRouter([
           {
             path: "sermon-details/:sermonId",
             element: <SermonDetailPage />,
+          },
+          {
+            path: "specific-dua",
+            element: <SpecificDuaPage />,
+          },
+          {
+            path: "specific-dua-details/:specificDuaId",
+            element: <SpecificDuaDetailsPage />,
           }
         ],
       },

@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
 import toast from "react-hot-toast";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import {
   Loader2,
@@ -43,29 +43,32 @@ export function DuaDetailPage() {
   const { duaId } = useParams();
   const [dua, setDua] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [uploadLoading, setUploadLoading] = useState(false);
   const [selectedTranslationLanguage, setSelectedTranslationLanguage] =
     useState(null);
   const [activeAudio, setActiveAudio] = useState(false);
 
-  // Edit Dua state
-  const [editDuaTitle, setEditDuaTitle] = useState("");
-  const [editDuaArabicTitle, setEditDuaArabicTitle] = useState("");
-  const [editDuaSubTitle, setEditDuaSubTitle] = useState("");
-  const [editDuaText, setEditDuaText] = useState("");
+  // Consolidated state objects
+  const [editDua, setEditDua] = useState({
+    title: "",
+    arabicTitle: "",
+    subTitle: "",
+    text: "",
+  });
 
-  // Translation form states
-  const [newTranslationLanguage, setNewTranslationLanguage] = useState("");
-  const [newTranslationTitle, setNewTranslationTitle] = useState("");
-  const [newTranslationText, setNewTranslationText] = useState("");
-  const [newTranslationDescription, setNewTranslationDescription] =
-    useState("");
+  const [newTranslation, setNewTranslation] = useState({
+    language: "",
+    title: "",
+    text: "",
+    description: "",
+  });
 
-  // Edit Translation state
-  const [editTranslationTitle, setEditTranslationTitle] = useState("");
-  const [editTranslationText, setEditTranslationText] = useState("");
-  const [editTranslationDescription, setEditTranslationDescription] =
-    useState("");
+  const [editTranslation, setEditTranslation] = useState({
+    language: "",
+    title: "",
+    text: "",
+    description: "",
+  });
+
   const fetchDua = useCallback(async () => {
     try {
       setLoading(true);
@@ -79,10 +82,12 @@ export function DuaDetailPage() {
       const data = await response.json();
       if (response.ok) {
         setDua(data.dua);
-        setEditDuaTitle(data.dua.title);
-        setEditDuaSubTitle(data.dua.subTitle);
-        setEditDuaArabicTitle(data.dua.arabicTitle);
-        setEditDuaText(data.dua.text);
+        setEditDua({
+          title: data.dua.title,
+          arabicTitle: data.dua.arabicTitle,
+          subTitle: data.dua.subTitle,
+          text: data.dua.text,
+        });
 
         if (data.dua.translations?.length > 0) {
           setSelectedTranslationLanguage(data.dua.translations[0].language);
@@ -111,12 +116,7 @@ export function DuaDetailPage() {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({
-          title: editDuaTitle,
-          arabicTitle: editDuaArabicTitle,
-          subTitle: editDuaSubTitle,
-          text: editDuaText,
-        }),
+        body: JSON.stringify(editDua),
       });
 
       const data = await response.json();
@@ -136,19 +136,14 @@ export function DuaDetailPage() {
 
     try {
       const response = await fetch(
-        `${API_URL}/api/v1/admin/duas/${duaId}/translations`,
+        `${API_URL}/api/v1/admin/duas/${duaId}/translations/${selectedTranslationLanguage}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
           credentials: "include",
-          body: JSON.stringify({
-            language: selectedTranslationLanguage,
-            title: editTranslationTitle,
-            text: editTranslationText,
-            description: editTranslationDescription,
-          }),
+          body: JSON.stringify(editTranslation),
         },
       );
 
@@ -164,14 +159,10 @@ export function DuaDetailPage() {
     }
   };
 
-  useEffect(() => {
-    fetchDua();
-  }, [fetchDua]);
-
   const handleAddTranslation = async (e) => {
     e.preventDefault();
 
-    if (!newTranslationLanguage || !newTranslationText) {
+    if (!newTranslation.language || !newTranslation.text) {
       toast.error("Language and Translation are required");
       return;
     }
@@ -185,12 +176,7 @@ export function DuaDetailPage() {
             "Content-Type": "application/json",
           },
           credentials: "include",
-          body: JSON.stringify({
-            language: newTranslationLanguage,
-            title: newTranslationTitle,
-            text: newTranslationText,
-            description: newTranslationDescription,
-          }),
+          body: JSON.stringify(newTranslation),
         },
       );
 
@@ -198,10 +184,12 @@ export function DuaDetailPage() {
       if (response.ok) {
         toast.success("Translation added successfully");
         fetchDua();
-        setNewTranslationLanguage("");
-        setNewTranslationTitle("");
-        setNewTranslationText("");
-        setNewTranslationDescription("");
+        setNewTranslation({
+          language: "",
+          title: "",
+          text: "",
+          description: "",
+        });
       } else {
         toast.error(data.message || "Failed to add translation");
       }
@@ -210,17 +198,16 @@ export function DuaDetailPage() {
     }
   };
 
-  const handleDeleteTranslation = async (language) => {
+  const handleDeleteTranslation = async () => {
     try {
       const response = await fetch(
-        `${API_URL}/api/v1/admin/duas/${duaId}/translations`,
+        `${API_URL}/api/v1/admin/duas/${duaId}/translations/${selectedTranslationLanguage}`,
         {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
           },
           credentials: "include",
-          body: JSON.stringify({ language: selectedTranslationLanguage }),
         },
       );
 
@@ -228,7 +215,6 @@ export function DuaDetailPage() {
       if (response.ok) {
         toast.success("Translation deleted successfully");
         fetchDua();
-        console.log(dua.translations[0]);
       } else {
         toast.error(data.message || "Failed to delete translation");
       }
@@ -345,8 +331,8 @@ export function DuaDetailPage() {
                     done.
                   </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleEditDua} className="space-y-4">
-                  <div className="space-y-2">
+                <form onSubmit={handleEditDua} className="space-y-2">
+                  <div className="space-y-1">
                     <label
                       htmlFor="editTitle"
                       className="text-sm font-medium text-gray-600"
@@ -355,13 +341,15 @@ export function DuaDetailPage() {
                     </label>
                     <Input
                       id="editTitle"
-                      value={editDuaTitle}
-                      onChange={(e) => setEditDuaTitle(e.target.value)}
+                      value={editDua.title}
+                      onChange={(e) =>
+                        setEditDua({ ...editDua, title: e.target.value })
+                      }
                       placeholder="Enter Dua title"
                       className="w-full"
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <label
                       htmlFor="editArabicTitle"
                       className="text-sm font-medium text-gray-600"
@@ -370,13 +358,15 @@ export function DuaDetailPage() {
                     </label>
                     <Input
                       id="editArabicTitle"
-                      value={editDuaArabicTitle}
-                      onChange={(e) => setEditDuaArabicTitle(e.target.value)}
+                      value={editDua.arabicTitle}
+                      onChange={(e) =>
+                        setEditDua({ ...editDua, arabicTitle: e.target.value })
+                      }
                       placeholder="Enter Dua arabic title"
                       className="w-full"
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <label
                       htmlFor="editSubTitle"
                       className="text-sm font-medium text-gray-600"
@@ -385,13 +375,15 @@ export function DuaDetailPage() {
                     </label>
                     <Input
                       id="editSubTitle"
-                      value={editDuaSubTitle}
-                      onChange={(e) => setEditDuaSubTitle(e.target.value)}
+                      value={editDua.subTitle}
+                      onChange={(e) =>
+                        setEditDua({ ...editDua, subTitle: e.target.value })
+                      }
                       placeholder="Enter Dua sub title"
                       className="w-full"
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <label
                       htmlFor="editText"
                       className="text-sm font-medium text-gray-600"
@@ -400,8 +392,10 @@ export function DuaDetailPage() {
                     </label>
                     <Textarea
                       id="editText"
-                      value={editDuaText}
-                      onChange={(e) => setEditDuaText(e.target.value)}
+                      value={editDua.text}
+                      onChange={(e) =>
+                        setEditDua({ ...editDua, text: e.target.value })
+                      }
                       placeholder="Enter Dua text"
                       className="w-full"
                       rows={6}
@@ -423,11 +417,12 @@ export function DuaDetailPage() {
                     size="sm"
                     className="flex items-center space-x-2"
                     onClick={() => {
-                      setEditTranslationTitle(selectedTranslation?.title || "");
-                      setEditTranslationText(selectedTranslation?.text || "");
-                      setEditTranslationDescription(
-                        selectedTranslation?.description || "",
-                      );
+                      setEditTranslation({
+                        language: selectedTranslationLanguage,
+                        title: selectedTranslation?.title || "",
+                        text: selectedTranslation?.text || "",
+                        description: selectedTranslation?.description || "",
+                      });
                     }}
                   >
                     <Edit className="h-4 w-4" />
@@ -444,23 +439,48 @@ export function DuaDetailPage() {
                       done.
                     </DialogDescription>
                   </DialogHeader>
-                  <form onSubmit={handleEditTranslation} className="space-y-4">
-                  <div className="space-y-2">
-                    <label
-                      htmlFor="editTranslationTitle"
-                      className="text-sm font-medium text-gray-600"
-                    >
-                      Title
-                    </label>
-                    <Input
-                      id="editTranslationTitle"
-                      value={editTranslationTitle}
-                      onChange={(e) => setEditTranslationTitle(e.target.value)}
-                      placeholder="Enter Dua sub title"
-                      className="w-full"
-                    />
-                  </div>
-                    <div className="space-y-2">
+                  <form onSubmit={handleEditTranslation} className="space-y-2">
+                    <div className="space-y-1">
+                      <label
+                        htmlFor="editTranslationLanguage"
+                        className="text-sm font-medium text-gray-600"
+                      >
+                        Language
+                      </label>
+                      <Input
+                        id="editTranslationLanguage"
+                        value={editTranslation.language}
+                        onChange={(e) =>
+                          setEditTranslation({
+                            ...editTranslation,
+                            language: e.target.value,
+                          })
+                        }
+                        placeholder="Enter translation title"
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label
+                        htmlFor="editTranslationTitle"
+                        className="text-sm font-medium text-gray-600"
+                      >
+                        Title
+                      </label>
+                      <Input
+                        id="editTranslationTitle"
+                        value={editTranslation.title}
+                        onChange={(e) =>
+                          setEditTranslation({
+                            ...editTranslation,
+                            title: e.target.value,
+                          })
+                        }
+                        placeholder="Enter translation title"
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="space-y-1">
                       <label
                         htmlFor="editTranslationText"
                         className="text-sm font-medium text-gray-600"
@@ -469,14 +489,19 @@ export function DuaDetailPage() {
                       </label>
                       <Textarea
                         id="editTranslationText"
-                        value={editTranslationText}
-                        onChange={(e) => setEditTranslationText(e.target.value)}
+                        value={editTranslation.text}
+                        onChange={(e) =>
+                          setEditTranslation({
+                            ...editTranslation,
+                            text: e.target.value,
+                          })
+                        }
                         placeholder="Enter translation text"
                         className="w-full"
                         rows={6}
                       />
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       <label
                         htmlFor="editTranslationDescription"
                         className="text-sm font-medium text-gray-600"
@@ -485,9 +510,12 @@ export function DuaDetailPage() {
                       </label>
                       <Textarea
                         id="editTranslationDescription"
-                        value={editTranslationDescription}
+                        value={editTranslation.description}
                         onChange={(e) =>
-                          setEditTranslationDescription(e.target.value)
+                          setEditTranslation({
+                            ...editTranslation,
+                            description: e.target.value,
+                          })
                         }
                         placeholder="Enter translation description"
                         className="w-full"
@@ -518,8 +546,8 @@ export function DuaDetailPage() {
                 <DialogHeader>
                   <DialogTitle>Add Translation</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleAddTranslation} className="space-y-4">
-                  <div className="space-y-2">
+                <form onSubmit={handleAddTranslation} className="space-y-2">
+                  <div className="space-y-1">
                     <label
                       htmlFor="translationLanguage"
                       className="text-sm font-medium text-gray-600"
@@ -528,30 +556,38 @@ export function DuaDetailPage() {
                     </label>
                     <Input
                       id="translationLanguage"
-                      value={newTranslationLanguage}
+                      value={newTranslation.language}
                       onChange={(e) =>
-                        setNewTranslationLanguage(e.target.value)
+                        setNewTranslation({
+                          ...newTranslation,
+                          language: e.target.value,
+                        })
                       }
                       placeholder="Enter language"
                       className="w-full"
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <label
-                      htmlFor="translationLanguage"
+                      htmlFor="translationTitle"
                       className="text-sm font-medium text-gray-600"
                     >
                       Title
                     </label>
                     <Input
                       id="translationTitle"
-                      value={newTranslationTitle}
-                      onChange={(e) => setNewTranslationTitle(e.target.value)}
+                      value={newTranslation.title}
+                      onChange={(e) =>
+                        setNewTranslation({
+                          ...newTranslation,
+                          title: e.target.value,
+                        })
+                      }
                       placeholder="Enter title"
                       className="w-full"
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <label
                       htmlFor="translationText"
                       className="text-sm font-medium text-gray-600"
@@ -560,14 +596,19 @@ export function DuaDetailPage() {
                     </label>
                     <Textarea
                       id="translationText"
-                      value={newTranslationText}
-                      onChange={(e) => setNewTranslationText(e.target.value)}
+                      value={newTranslation.text}
+                      onChange={(e) =>
+                        setNewTranslation({
+                          ...newTranslation,
+                          text: e.target.value,
+                        })
+                      }
                       placeholder="Enter translation"
                       className="w-full"
                       rows={4}
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <label
                       htmlFor="translationDescription"
                       className="text-sm font-medium text-gray-600"
@@ -576,9 +617,12 @@ export function DuaDetailPage() {
                     </label>
                     <Textarea
                       id="translationDescription"
-                      value={newTranslationDescription}
+                      value={newTranslation.description}
                       onChange={(e) =>
-                        setNewTranslationDescription(e.target.value)
+                        setNewTranslation({
+                          ...newTranslation,
+                          description: e.target.value,
+                        })
                       }
                       placeholder="Enter description"
                       className="w-full"
@@ -599,7 +643,7 @@ export function DuaDetailPage() {
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-2">
             {dua.translations && dua.translations.length > 0 && (
               <div className="mb-4 flex items-center space-x-4 rounded-lg border border-gray-200 bg-gray-50 p-3 shadow-sm">
                 <div className="flex w-full items-center space-x-3">

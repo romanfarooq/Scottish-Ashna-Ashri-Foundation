@@ -5,7 +5,10 @@ import { body, param, validationResult } from "express-validator";
 
 const duaValidationRules = [
   body("title").isString().notEmpty().withMessage("Title is required"),
-  body("arabicTitle").isString().notEmpty().withMessage("Arabic title is required"),
+  body("arabicTitle")
+    .isString()
+    .notEmpty()
+    .withMessage("Arabic title is required"),
   body("text").isString().optional().withMessage("Text is required"),
   body("subTitle").isString().optional(),
   body("translations").isArray().optional(),
@@ -28,6 +31,10 @@ const translationValidationRules = [
 
 const idValidationRule = [
   param("id").isMongoId().withMessage("Invalid ID format"),
+];
+
+const translationUpdateOrDeleteValidationRules = [
+  param("language").isString().notEmpty().withMessage("Language is required"),
 ];
 
 export const handleValidationErrors = (req, res, next) => {
@@ -69,7 +76,13 @@ export const addDua = [
   async (req, res) => {
     try {
       const { title, arabicTitle, subTitle, text, translations } = req.body;
-      const newDua = new Dua({ title, arabicTitle, subTitle, text, translations });
+      const newDua = new Dua({
+        title,
+        arabicTitle,
+        subTitle,
+        text,
+        translations,
+      });
       await newDua.save();
       res.status(201).json({ message: "Dua created successfully" });
     } catch (error) {
@@ -289,9 +302,9 @@ export const addDuaTranslation = [
 export const updateDuaTranslation = [
   idValidationRule,
   translationValidationRules,
+  translationUpdateOrDeleteValidationRules,
   handleValidationErrors,
   async (req, res) => {
-    console.log(req.body);
     const { language, title, text, description } = req.body;
     try {
       const dua = await Dua.findById(req.params.id);
@@ -299,11 +312,14 @@ export const updateDuaTranslation = [
         return res.status(404).json({ message: "Dua not found" });
       }
 
-      const translation = dua.translations.find((t) => t.language === language);
+      const translation = dua.translations.find(
+        (t) => t.language === req.params.language
+      );
       if (!translation) {
         return res.status(404).json({ message: "Translation not found" });
       }
 
+      translation.language = language;
       translation.title = title;
       translation.text = text;
       translation.description = description;
@@ -319,10 +335,10 @@ export const updateDuaTranslation = [
 
 export const deleteDuaTranslation = [
   idValidationRule,
-  body("language").notEmpty().withMessage("Language is required"),
+  translationUpdateOrDeleteValidationRules,
   handleValidationErrors,
   async (req, res) => {
-    const { language } = req.body;
+    const { id, language } = req.params;
     try {
       const dua = await Dua.findById(req.params.id);
       if (!dua) {

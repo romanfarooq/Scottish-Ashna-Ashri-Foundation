@@ -188,12 +188,12 @@ router.post(
   addDuaTranslation
 );
 router.put(
-  "/duas/:id/translations",
+  "/duas/:id/translations/:language",
   isAuthenticatedAdmin,
   updateDuaTranslation
 );
 router.delete(
-  "/duas/:id/translations",
+  "/duas/:id/translations/:language",
   isAuthenticatedAdmin,
   deleteDuaTranslation
 );

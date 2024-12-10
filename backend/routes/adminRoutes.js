@@ -53,6 +53,46 @@ import {
   uploadSurahTajweedImages,
   AddTajweedRuleImage,
 } from "../controllers/surahController.js";
+import {
+  getAllZiarahs,
+  getZiarahById,
+  addZiarah,
+  updateZiarah,
+  deleteZiarah,
+  getZiarahAudio,
+  uploadZiarahAudio,
+  deleteZiarahAudio,
+  addZiarahTranslation,
+  updateZiarahTranslation,
+  deleteZiarahTranslation,
+} from "../controllers/ziarahController.js";
+import {
+  getAllTaqibaats,
+  getTaqibaatById,
+  addTaqibaat,
+  updateTaqibaat,
+  deleteTaqibaat,
+  getTaqibaatAudio,
+  uploadTaqibaatAudio,
+  deleteTaqibaatAudio,
+  addTaqibaatTranslation,
+  updateTaqibaatTranslation,
+  deleteTaqibaatTranslation,
+} from '../controllers/taqibaatController.js';
+import {
+  getAllSahifas,
+  getSahifaById,
+  addSahifa,
+  updateSahifa,
+  deleteSahifa,
+  getSahifaAudio,
+  uploadSahifaAudio,
+  deleteSahifaAudio,
+  addSahifaTranslation,
+  updateSahifaTranslation,
+  deleteSahifaTranslation,
+} from '../controllers/sahifaController.js';
+
 
 const router = Router();
 
@@ -182,11 +222,7 @@ router.post(
   uploadDuaAudio
 );
 router.delete("/duas/:id/audio", isAuthenticatedAdmin, deleteDuaAudio);
-router.post(
-  "/duas/:id/translations",
-  isAuthenticatedAdmin,
-  addDuaTranslation
-);
+router.post("/duas/:id/translations", isAuthenticatedAdmin, addDuaTranslation);
 router.put(
   "/duas/:id/translations/:language",
   isAuthenticatedAdmin,
@@ -197,5 +233,94 @@ router.delete(
   isAuthenticatedAdmin,
   deleteDuaTranslation
 );
+
+router.get("/ziarahs", isAuthenticatedAdmin, getAllZiarahs);
+router.get("/ziarahs/:id", isAuthenticatedAdmin, getZiarahById);
+router.post("/ziarahs", isAuthenticatedAdmin, addZiarah);
+router.put("/ziarahs/:id", isAuthenticatedAdmin, updateZiarah);
+router.delete("/ziarahs/:id", isAuthenticatedAdmin, deleteZiarah);
+router.get("/ziarahs/:id/audio", isAuthenticatedAdmin, getZiarahAudio);
+router.post(
+  "/ziarahs/:id/audio",
+  isAuthenticatedAdmin,
+  audioUpload.single("audio"),
+  uploadZiarahAudio
+);
+router.delete("/ziarahs/:id/audio", isAuthenticatedAdmin, deleteZiarahAudio);
+router.post(
+  "/ziarahs/:id/translations",
+  isAuthenticatedAdmin,
+  addZiarahTranslation
+);
+router.put(
+  "/ziarahs/:id/translations/:language",
+  isAuthenticatedAdmin,
+  updateZiarahTranslation
+);
+router.delete(
+  "/ziarahs/:id/translations/:language",
+  isAuthenticatedAdmin,
+  deleteZiarahTranslation
+);
+
+
+router.get("/taqibaats", isAuthenticatedAdmin, getAllTaqibaats);
+router.get("/taqibaats/:id", isAuthenticatedAdmin, getTaqibaatById);
+router.post("/taqibaats", isAuthenticatedAdmin, addTaqibaat);
+router.put("/taqibaats/:id", isAuthenticatedAdmin, updateTaqibaat);
+router.delete("/taqibaats/:id", isAuthenticatedAdmin, deleteTaqibaat);
+router.get("/taqibaats/:id/audio", isAuthenticatedAdmin, getTaqibaatAudio);
+router.post(
+  "/taqibaats/:id/audio",
+  isAuthenticatedAdmin,
+  audioUpload.single("audio"),
+  uploadTaqibaatAudio
+);
+router.delete("/taqibaats/:id/audio", isAuthenticatedAdmin, deleteTaqibaatAudio);
+router.post(
+  "/taqibaats/:id/translations",
+  isAuthenticatedAdmin,
+  addTaqibaatTranslation
+);
+router.put(
+  "/taqibaats/:id/translations/:language",
+  isAuthenticatedAdmin,
+  updateTaqibaatTranslation
+);
+router.delete(
+  "/taqibaats/:id/translations/:language",
+  isAuthenticatedAdmin,
+  deleteTaqibaatTranslation
+);
+
+router.get("/sahifas", isAuthenticatedAdmin, getAllSahifas);
+router.get("/sahifas/:id", isAuthenticatedAdmin, getSahifaById);
+router.post("/sahifas", isAuthenticatedAdmin, addSahifa);
+router.put("/sahifas/:id", isAuthenticatedAdmin, updateSahifa);
+router.delete("/sahifas/:id", isAuthenticatedAdmin, deleteSahifa);
+router.get("/sahifas/:id/audio", isAuthenticatedAdmin, getSahifaAudio);
+router.post(
+  "/sahifas/:id/audio",
+  isAuthenticatedAdmin,
+  audioUpload.single("audio"),
+  uploadSahifaAudio
+);
+router.delete("/sahifas/:id/audio", isAuthenticatedAdmin, deleteSahifaAudio);
+router.post(
+  "/sahifas/:id/translations",
+  isAuthenticatedAdmin,
+  addSahifaTranslation
+);
+router.put(
+  "/sahifas/:id/translations/:language",
+  isAuthenticatedAdmin,
+  updateSahifaTranslation
+);
+router.delete(
+  "/sahifas/:id/translations/:language",
+  isAuthenticatedAdmin,
+  deleteSahifaTranslation
+);
+
 
 export default router;

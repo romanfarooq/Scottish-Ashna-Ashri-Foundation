@@ -119,7 +119,7 @@ const menuItems = [
       },
       {
         title: "Ziaraah",
-        url: "#",
+        url: "/ziarah",
         icon: Map,
       },
       {
@@ -129,7 +129,7 @@ const menuItems = [
       },
       {
         title: "Taqibaat",
-        url: "#",
+        url: "/taqibaat",
         icon: BookOpen,
       },
       {
@@ -139,7 +139,7 @@ const menuItems = [
       },
       {
         title: "Sahifa Sajjadia",
-        url: "#",
+        url: "/sahifa",
         icon: Book,
       },
       {

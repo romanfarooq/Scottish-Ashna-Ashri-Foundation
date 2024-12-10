@@ -16,6 +16,12 @@ import { QuranImagesPage } from "./pages/QuranImagesPage";
 import { QuranImagesTajweedPage } from "./pages/QuranImagesTajweedPage";
 import { DuaPage } from "./pages/DuaPage";
 import { DuaDetailPage } from "./pages/DuaDetailPage";
+import { ZiarahPage } from "./pages/ZiarahPage";
+import { ZiarahDetailPage } from "./pages/ZiarahDetailPage";
+import { TaqibaatPage } from "./pages/TaqibaatPage";
+import { TaqibaatDetailPage } from "./pages/TaqibaatDetailsPage";
+import { SahifaPage } from "./pages/SahifaPage";
+import { SahifaDetailPage } from "./pages/SahifaDetailsPage";
 
 const router = createBrowserRouter([
   {
@@ -56,6 +62,30 @@ const router = createBrowserRouter([
           {
             path: "dua-details/:duaId",
             element: <DuaDetailPage />,
+          },
+          {
+            path: "ziarah",
+            element: <ZiarahPage />,
+          },
+          {
+            path: "ziarah-details/:ziarahId",
+            element: <ZiarahDetailPage />,
+          },
+          {
+            path: "taqibaat",
+            element: <TaqibaatPage />,
+          },
+          {
+            path: "taqibaat-details/:taqibaatId",
+            element: <TaqibaatDetailPage />,
+          },
+          {
+            path: "sahifa",
+            element: <SahifaPage />,
+          },
+          {
+            path: "sahifa-details/:sahifaId",
+            element: <SahifaDetailPage />,
           }
         ],
       },

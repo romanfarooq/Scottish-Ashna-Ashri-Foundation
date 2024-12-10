@@ -1,14 +1,16 @@
 import mongoose from "mongoose";
 
-const TajweedSchema = new mongoose.Schema({
-  imageFileId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "image.files",
-    required: true,
+const TajweedSchema = new mongoose.Schema(
+  {
+    imageFileId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "image.files",
+      required: true,
+    },
   },
-});
+  { timestamps: true }
+);
 
-const Tajweed =
-  mongoose.models.Tajweed || mongoose.model("Tajweed", TajweedSchema);
+const Tajweed = mongoose.models.Tajweed || mongoose.model("Tajweed", TajweedSchema);
 
 export default Tajweed;

@@ -1,12 +1,15 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-const UserSchema = new mongoose.Schema({
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  otp: { type: String },
-  otpExpires: { type: Date },
-});
+const UserSchema = new mongoose.Schema(
+  {
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    otp: { type: String },
+    otpExpires: { type: Date },
+  },
+  { timestamps: true }
+);
 
 UserSchema.pre("save", async function (next) {
   if (this.isModified("password")) {

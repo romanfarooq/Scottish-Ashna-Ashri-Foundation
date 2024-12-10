@@ -767,7 +767,10 @@ export function SermonDetailPage() {
                           )}
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent side="bottom">
+                      <TooltipContent
+                        side="bottom"
+                        className="rounded-md border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs text-gray-700 shadow-sm"
+                      >
                         {activeAudio ? "Stop Audio" : "Play Audio"}
                       </TooltipContent>
                     </Tooltip>

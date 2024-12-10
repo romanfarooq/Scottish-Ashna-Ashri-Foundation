@@ -7,15 +7,19 @@ const TaqibaatTranslationSchema = new mongoose.Schema({
   description: String,
 });
 
-const TaqibaatSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  arabicTitle: { type: String, required: true },
-  subTitle: String,
-  text: String,
-  translations: [TaqibaatTranslationSchema],
-  audioFileId: { type: mongoose.Schema.Types.ObjectId, ref: "audio.files" },
-});
+const TaqibaatSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true },
+    arabicTitle: { type: String, required: true },
+    subTitle: String,
+    text: String,
+    translations: [TaqibaatTranslationSchema],
+    audioFileId: { type: mongoose.Schema.Types.ObjectId, ref: "audio.files" },
+  },
+  { timestamps: true }
+);
 
-const Taqibaat = mongoose.models.Taqibaat || mongoose.model("Taqibaat", TaqibaatSchema);
+const Taqibaat =
+  mongoose.models.Taqibaat || mongoose.model("Taqibaat", TaqibaatSchema);
 
 export default Taqibaat;

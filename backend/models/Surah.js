@@ -34,18 +34,21 @@ const AyahSchema = new mongoose.Schema({
   audioFileId: { type: mongoose.Schema.Types.ObjectId, ref: "audio.files" },
 });
 
-const SurahSchema = new mongoose.Schema({
-  surahNumber: { type: Number, required: true },
-  name: { type: String, required: true },
-  englishName: { type: String, required: true },
-  meaning: { type: String, required: true },
-  juzzNumber: { type: Number, required: true },
-  audioFileId: { type: mongoose.Schema.Types.ObjectId, ref: "audio.files" },
-  translations: [TranslationSchema],
-  ayat: [AyahSchema],
-  images: [SurahImageSchema],
-  tajweedImages: [SurahImageTajweedSchema],
-});
+const SurahSchema = new mongoose.Schema(
+  {
+    surahNumber: { type: Number, required: true },
+    name: { type: String, required: true },
+    englishName: { type: String, required: true },
+    meaning: { type: String, required: true },
+    juzzNumber: { type: Number, required: true },
+    audioFileId: { type: mongoose.Schema.Types.ObjectId, ref: "audio.files" },
+    translations: [TranslationSchema],
+    ayat: [AyahSchema],
+    images: [SurahImageSchema],
+    tajweedImages: [SurahImageTajweedSchema],
+  },
+  { timestamps: true }
+);
 
 const Surah = mongoose.models.Surah || mongoose.model("Surah", SurahSchema);
 

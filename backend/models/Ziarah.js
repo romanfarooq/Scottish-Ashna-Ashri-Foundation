@@ -7,14 +7,17 @@ const ZiarahTranslationSchema = new mongoose.Schema({
   description: String,
 });
 
-const ZiarahSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  arabicTitle: { type: String, required: true },
-  subTitle: String,
-  text: String,
-  translations: [ZiarahTranslationSchema],
-  audioFileId: { type: mongoose.Schema.Types.ObjectId, ref: "audio.files" },
-});
+const ZiarahSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true },
+    arabicTitle: { type: String, required: true },
+    subTitle: String,
+    text: String,
+    translations: [ZiarahTranslationSchema],
+    audioFileId: { type: mongoose.Schema.Types.ObjectId, ref: "audio.files" },
+  },
+  { timestamps: true }
+);
 
 const Ziarah = mongoose.models.Ziarah || mongoose.model("Ziarah", ZiarahSchema);
 

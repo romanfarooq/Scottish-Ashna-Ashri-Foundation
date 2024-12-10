@@ -123,11 +123,17 @@ export const deleteSermon = [
   handleValidationErrors,
   async (req, res) => {
     try {
-      const sermon = await Sermon.findByIdAndDelete(req.params.id);
+      const sermon = await Sermon.findById(req.params.id);
 
       if (!sermon) {
         return res.status(404).json({ message: "Sermon not found" });
       }
+
+      if (sermon.audioFileId) {
+        await gfsAudio.delete(sermon.audioFileId);
+      }
+
+      await sermon.remove();
 
       res.json({ message: "Sermon deleted successfully" });
     } catch (error) {

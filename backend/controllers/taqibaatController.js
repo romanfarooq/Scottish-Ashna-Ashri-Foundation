@@ -126,11 +126,17 @@ export const deleteTaqibaat = [
   handleValidationErrors,
   async (req, res) => {
     try {
-      const taqibaat = await Taqibaat.findByIdAndDelete(req.params.id);
+      const taqibaat = await Taqibaat.findById(req.params.id);
 
       if (!taqibaat) {
         return res.status(404).json({ message: "Taqibaat not found" });
       }
+
+      if (taqibaat.audioFileId) {
+        await gfsAudio.delete(taqibaat.audioFileId);
+      }
+
+      await taqibaat.remove();
 
       res.json({ message: "Taqibaat deleted successfully" });
     } catch (error) {

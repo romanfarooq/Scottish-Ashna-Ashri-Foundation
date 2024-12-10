@@ -119,11 +119,17 @@ export const deleteDua = [
   handleValidationErrors,
   async (req, res) => {
     try {
-      const dua = await Dua.findByIdAndDelete(req.params.id);
+      const dua = await Dua.findById(req.params.id);
 
       if (!dua) {
         return res.status(404).json({ message: "Dua not found" });
       }
+
+      if (dua.audioFileId) {
+        await gfsAudio.delete(dua.audioFileId);
+      }
+
+      await dua.remove();
 
       res.json({ message: "Dua deleted successfully" });
     } catch (error) {

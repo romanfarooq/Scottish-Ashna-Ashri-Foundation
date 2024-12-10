@@ -119,11 +119,17 @@ export const deleteZiarah = [
   handleValidationErrors,
   async (req, res) => {
     try {
-      const ziarah = await Ziarah.findByIdAndDelete(req.params.id);
+      const ziarah = await Ziarah.findById(req.params.id);
 
       if (!ziarah) {
         return res.status(404).json({ message: "Ziarah not found" });
       }
+
+      if (ziarah.audioFileId) {
+        await gfsAudio.delete(ziarah.audioFileId);
+      }
+
+      await ziarah.remove();
 
       res.json({ message: "Ziarah deleted successfully" });
     } catch (error) {

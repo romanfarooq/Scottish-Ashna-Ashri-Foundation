@@ -123,11 +123,17 @@ export const deleteSahifa = [
   handleValidationErrors,
   async (req, res) => {
     try {
-      const sahifa = await Sahifa.findByIdAndDelete(req.params.id);
+      const sahifa = await Sahifa.findById(req.params.id);
 
       if (!sahifa) {
         return res.status(404).json({ message: "Sahifa not found" });
       }
+
+      if (sahifa.audioFileId) {
+        await gfsAudio.delete(sahifa.audioFileId);
+      }
+
+      await sahifa.remove();
 
       res.json({ message: "Sahifa deleted successfully" });
     } catch (error) {

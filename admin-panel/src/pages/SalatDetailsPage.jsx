@@ -15,9 +15,9 @@ import { useParams } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export function SpecificDuaDetailsPage() {
-  const { specificDuaId } = useParams();
-  const [specificDua, setSpecificDua] = useState({
+export function SalatDetailsPage() {
+  const { salatId } = useParams();
+  const [salat, setSalat] = useState({
     title: "",
     subTitle: "",
   });
@@ -31,7 +31,7 @@ export function SpecificDuaDetailsPage() {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `${API_URL}/api/v1/admin/specific-duas/${specificDuaId}`,
+        `${API_URL}/api/v1/admin/salats/${salatId}`,
         {
           method: "GET",
           credentials: "include",
@@ -44,11 +44,11 @@ export function SpecificDuaDetailsPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setSpecificDua({
-          title: data.specificDua.title || "",
-          subTitle: data.specificDua.subTitle || "",
+        setSalat({
+          title: data.salat.title || "",
+          subTitle: data.salat.subTitle || "",
         });
-        setEditorValue(data.specificDua.content || "");
+        setEditorValue(data.salat.content || "");
         setHasChanges(false);
       } else {
         toast.error(data.message || "Failed to fetch content");
@@ -58,7 +58,7 @@ export function SpecificDuaDetailsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [salatId]);
 
   useEffect(() => {
     fetchContent();
@@ -107,7 +107,7 @@ export function SpecificDuaDetailsPage() {
     setIsSaving(true);
     try {
       const response = await fetch(
-        `${API_URL}/api/v1/admin/specific-duas/${specificDuaId}`,
+        `${API_URL}/api/v1/admin/salats/${salatId}`,
         {
           method: "PUT",
           credentials: "include",
@@ -115,8 +115,8 @@ export function SpecificDuaDetailsPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            title: specificDua.title,
-            subTitle: specificDua.subTitle,
+            title: salat.title,
+            subTitle: salat.subTitle,
             content: editorValue,
           }),
         },
@@ -139,33 +139,33 @@ export function SpecificDuaDetailsPage() {
 
   const modules = {
     toolbar: [
-      [{ header: [1, 2, 3, 4, 5, 6, false] }], // Headers
-      [{ size: ["small", false, "large", "huge"] }], // Font sizes
-      ["bold", "italic", "underline", "strike"], // Text formatting
-      [{ color: [] }, { background: [] }], // Text color and background
-      [{ script: "sub" }, { script: "super" }], // Subscript and superscript
-      [{ list: "ordered" }, { list: "bullet" }], // Lists
-      [{ indent: "-1" }, { indent: "+1" }], // Indentation
-      [{ direction: "rtl" }], // Text direction (RTL)
-      [{ align: [] }], // Text alignment
-      ["clean"], // Remove formatting
+      [{ header: [1, 2, 3, 4, 5, 6, false] }],
+      [{ size: ["small", false, "large", "huge"] }],
+      ["bold", "italic", "underline", "strike"],
+      [{ color: [] }, { background: [] }],
+      [{ script: "sub" }, { script: "super" }],
+      [{ list: "ordered" }, { list: "bullet" }],
+      [{ indent: "-1" }, { indent: "+1" }],
+      [{ direction: "rtl" }],
+      [{ align: [] }],
+      ["clean"],
     ],
   };
 
   const formats = [
-    "header", // Headers
-    "size", // Font size
+    "header",
+    "size",
     "bold",
     "italic",
     "underline",
-    "strike", // Text formatting
+    "strike",
     "color",
-    "background", // Text color and background
-    "script", // Subscript and superscript
+    "background",
+    "script",
     "list",
-    "indent", // Indentation
-    "direction", // Text direction (RTL)
-    "align", // Text alignment
+    "indent",
+    "direction",
+    "align",
   ];
 
   return (
@@ -173,11 +173,11 @@ export function SpecificDuaDetailsPage() {
       <div className="mx-auto max-w-4xl overflow-hidden rounded-lg bg-white shadow-md">
         <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
           <h2 className="text-2xl font-semibold text-gray-800">
-          {specificDua.title}
+            {salat.title}
             <span className="text-sm pl-3 text-gray-600 font-normal">
-              ({specificDua.subTitle})
+              ({salat.subTitle})
             </span>
-          </h2>
+            </h2>
           <button
             onClick={fetchContent}
             disabled={isLoading}
@@ -203,19 +203,19 @@ export function SpecificDuaDetailsPage() {
             >
               <Upload size={16} />
               {uploadedFileName ? "Replace File" : "Upload .docx"}
+              {uploadedFileName && (
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <FileText size={16} />
+                  <span>{uploadedFileName}</span>
+                  <button
+                    onClick={clearFile}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              )}
             </label>
-            {uploadedFileName && (
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <FileText size={16} />
-                <span>{uploadedFileName}</span>
-                <button
-                  onClick={clearFile}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            )}
           </div>
 
           <ReactQuill
@@ -225,7 +225,7 @@ export function SpecificDuaDetailsPage() {
             modules={modules}
             formats={formats}
             className="mb-4 rounded-md border"
-            placeholder="Write your about us content here..."
+            placeholder="Write your content here..."
           />
 
           <div className="flex justify-end gap-4">

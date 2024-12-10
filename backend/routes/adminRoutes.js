@@ -112,6 +112,13 @@ import {
   updateSpecificDua,
   deleteSpecificDua,
 } from "../controllers/specificDuaController.js";
+import {
+  getAllSalats,
+  getSalatById,
+  addSalat,
+  updateSalat,
+  deleteSalat,
+} from "../controllers/salatController.js";
 
 const router = Router();
 
@@ -376,5 +383,11 @@ router.get("/specific-duas/:id", isAuthenticatedAdmin, getSpecificDuaById);
 router.post("/specific-duas", isAuthenticatedAdmin, addSpecificDua);
 router.put("/specific-duas/:id", isAuthenticatedAdmin, updateSpecificDua);
 router.delete("/specific-duas/:id", isAuthenticatedAdmin, deleteSpecificDua);
+
+router.get("/salats", isAuthenticatedAdmin, getAllSalats);
+router.get("/salats/:id", isAuthenticatedAdmin, getSalatById);
+router.post("/salats", isAuthenticatedAdmin, addSalat);
+router.put("/salats/:id", isAuthenticatedAdmin, updateSalat);
+router.delete("/salats/:id", isAuthenticatedAdmin, deleteSalat);
 
 export default router;

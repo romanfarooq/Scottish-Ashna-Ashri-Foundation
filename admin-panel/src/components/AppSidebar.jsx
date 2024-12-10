@@ -124,7 +124,7 @@ const menuItems = [
       },
       {
         title: "Salat",
-        url: "#",
+        url: "/salat",
         icon: PrayingHands,
       },
       {

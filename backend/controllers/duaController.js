@@ -5,6 +5,7 @@ import { body, param, validationResult } from "express-validator";
 
 const duaValidationRules = [
   body("title").isString().notEmpty().withMessage("Title is required"),
+  body("arabicTitle").isString().notEmpty().withMessage("Arabic title is required"),
   body("text").isString().optional().withMessage("Text is required"),
   body("subTitle").isString().optional(),
   body("translations").isArray().optional(),
@@ -21,6 +22,7 @@ const translationValidationRules = [
     .notEmpty()
     .trim()
     .withMessage("Translation text is required"),
+  body("title").isString().notEmpty().trim().withMessage("Title is required"),
   body("description").isString().optional().trim(),
 ];
 
@@ -66,8 +68,8 @@ export const addDua = [
   handleValidationErrors,
   async (req, res) => {
     try {
-      const { title, subTitle, text, translations } = req.body;
-      const newDua = new Dua({ title, subTitle, text, translations });
+      const { title, arabicTitle, subTitle, text, translations } = req.body;
+      const newDua = new Dua({ title, arabicTitle, subTitle, text, translations });
       await newDua.save();
       res.status(201).json({ message: "Dua created successfully" });
     } catch (error) {
@@ -258,7 +260,7 @@ export const addDuaTranslation = [
   translationValidationRules,
   handleValidationErrors,
   async (req, res) => {
-    const { language, text, description } = req.body;
+    const { language, title, text, description } = req.body;
 
     try {
       const dua = await Dua.findById(req.params.id);
@@ -273,7 +275,7 @@ export const addDuaTranslation = [
         return res.status(400).json({ message: "Translation already exists" });
       }
 
-      dua.translations.push({ language, text, description });
+      dua.translations.push({ language, title, text, description });
 
       await dua.save();
 
@@ -290,7 +292,7 @@ export const updateDuaTranslation = [
   handleValidationErrors,
   async (req, res) => {
     console.log(req.body);
-    const { language, text, description } = req.body;
+    const { language, title, text, description } = req.body;
     try {
       const dua = await Dua.findById(req.params.id);
       if (!dua) {
@@ -302,6 +304,7 @@ export const updateDuaTranslation = [
         return res.status(404).json({ message: "Translation not found" });
       }
 
+      translation.title = title;
       translation.text = text;
       translation.description = description;
 

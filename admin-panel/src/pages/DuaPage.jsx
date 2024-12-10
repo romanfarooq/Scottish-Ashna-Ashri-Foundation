@@ -49,6 +49,7 @@ export function DuaPage() {
   const [newDua, setNewDua] = useState({
     title: "",
     subTitle: "",
+    arabicTitle: "",
     text: "",
     translations: [],
   });
@@ -106,6 +107,7 @@ export function DuaPage() {
       }
       setNewDua({
         title: "",
+        arabicTitle: "",
         subTitle: "",
         text: "",
         translations: [],
@@ -206,6 +208,19 @@ export function DuaPage() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-gray-700">
+                        Arabic Title
+                      </label>
+                      <Input
+                        placeholder="Enter Dua Arabic Title"
+                        value={newDua.arabicTitle}
+                        onChange={(e) =>
+                          setNewDua({ ...newDua, arabicTitle: e.target.value })
+                        }
+                        className="focus-visible:ring-2 focus-visible:ring-blue-500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">
                         Sub Title
                       </label>
                       <Input
@@ -247,6 +262,9 @@ export function DuaPage() {
                   Title
                 </TableHead>
                 <TableHead className="text-center text-gray-600">
+                  Arabic Title
+                </TableHead>
+                <TableHead className="text-center text-gray-600">
                   Sub Title
                 </TableHead>
                 <TableHead className="text-center text-gray-600">
@@ -275,6 +293,9 @@ export function DuaPage() {
                     </TableCell>
                     <TableCell className="text-gray-800">
                       {dua.title || "N/A"}
+                    </TableCell>
+                    <TableCell className="text-gray-800">
+                      {dua.arabicTitle || "N/A"}
                     </TableCell>
                     <TableCell className="text-gray-800">
                       {dua.subTitle || "N/A"}
@@ -430,6 +451,16 @@ function EditduaDialog({ dua, selectedDua, setSelectedDua, fetchDuas }) {
             value={editedDua.title}
             onChange={(e) =>
               setEditedDua({ ...editedDua, title: e.target.value })
+            }
+            className="focus-visible:ring-2 focus-visible:ring-blue-500"
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Dua Arabic Title</label>
+          <Input
+            value={editedDua.arabicTitle}
+            onChange={(e) =>
+              setEditedDua({ ...editedDua, arabicTitle: e.target.value })
             }
             className="focus-visible:ring-2 focus-visible:ring-blue-500"
           />

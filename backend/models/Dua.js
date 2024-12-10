@@ -2,12 +2,14 @@ import mongoose from "mongoose";
 
 const DuaTranslationSchema = new mongoose.Schema({
   language: { type: String, required: true },
+  title: { type: String, required: true },
   text: { type: String, required: true },
   description: String,
 });
 
 const DuaSchema = new mongoose.Schema({
   title: { type: String, required: true },
+  arabicTitle: { type: String, required: true },
   subTitle: String,
   text: String,
   translations: [DuaTranslationSchema],

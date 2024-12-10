@@ -133,6 +133,11 @@ const menuItems = [
         icon: BookOpen,
       },
       {
+        title: "Sermons",
+        url: "/sermon",
+        icon: Mic,
+      },
+      {
         title: "Amal",
         url: "#",
         icon: CheckSquare,
@@ -182,11 +187,6 @@ const menuItems = [
         title: "Kitab al-Kafi",
         url: "#",
         icon: Book,
-      },
-      {
-        title: "Sermons",
-        url: "#",
-        icon: Mic,
       },
       {
         title: "Hadith Directory",

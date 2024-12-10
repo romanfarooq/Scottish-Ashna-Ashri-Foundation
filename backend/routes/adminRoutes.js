@@ -92,6 +92,19 @@ import {
   updateSahifaTranslation,
   deleteSahifaTranslation,
 } from '../controllers/sahifaController.js';
+import {
+  getAllSermons,
+  getSermonById,
+  addSermon,
+  updateSermon,
+  deleteSermon,
+  getSermonAudio,
+  uploadSermonAudio,
+  deleteSermonAudio,
+  addSermonTranslation,
+  updateSermonTranslation,
+  deleteSermonTranslation,
+} from "../controllers/sermonController.js";
 
 
 const router = Router();
@@ -320,6 +333,36 @@ router.delete(
   "/sahifas/:id/translations/:language",
   isAuthenticatedAdmin,
   deleteSahifaTranslation
+);
+
+
+router.get("/sermons", isAuthenticatedAdmin, getAllSermons);
+router.get("/sermons/:id", isAuthenticatedAdmin, getSermonById);
+router.post("/sermons", isAuthenticatedAdmin, addSermon);
+router.put("/sermons/:id", isAuthenticatedAdmin, updateSermon);
+router.delete("/sermons/:id", isAuthenticatedAdmin, deleteSermon);
+router.get("/sermons/:id/audio", isAuthenticatedAdmin, getSermonAudio);
+router.post(
+  "/sermons/:id/audio",
+  isAuthenticatedAdmin,
+  audioUpload.single("audio"),
+  uploadSermonAudio
+);
+router.delete("/sermons/:id/audio", isAuthenticatedAdmin, deleteSermonAudio);
+router.post(
+  "/sermons/:id/translations",
+  isAuthenticatedAdmin,
+  addSermonTranslation
+);
+router.put(
+  "/sermons/:id/translations/:language",
+  isAuthenticatedAdmin,
+  updateSermonTranslation
+);
+router.delete(
+  "/sermons/:id/translations/:language",
+  isAuthenticatedAdmin,
+  deleteSermonTranslation
 );
 
 

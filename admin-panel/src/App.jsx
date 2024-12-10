@@ -22,6 +22,8 @@ import { TaqibaatPage } from "./pages/TaqibaatPage";
 import { TaqibaatDetailPage } from "./pages/TaqibaatDetailsPage";
 import { SahifaPage } from "./pages/SahifaPage";
 import { SahifaDetailPage } from "./pages/SahifaDetailsPage";
+import { SermonPage } from "./pages/SermonPage";
+import { SermonDetailPage } from "./pages/SermonDetailsPage";
 
 const router = createBrowserRouter([
   {
@@ -86,6 +88,14 @@ const router = createBrowserRouter([
           {
             path: "sahifa-details/:sahifaId",
             element: <SahifaDetailPage />,
+          },
+          {
+            path: "sermon",
+            element: <SermonPage />,
+          },
+          {
+            path: "sermon-details/:sermonId",
+            element: <SermonDetailPage />,
           }
         ],
       },

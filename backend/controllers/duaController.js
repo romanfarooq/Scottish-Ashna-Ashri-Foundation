@@ -4,9 +4,10 @@ import { gfsAudio } from "../config/db.js";
 import { body, param, validationResult } from "express-validator";
 
 const duaValidationRules = [
-  body("title").isString().notEmpty().trim().withMessage("Title is required"),
-  body("text").isString().optional().trim().withMessage("Text is required"),
-  body("subTitle").isString().optional().trim(),
+  body("title").isString().notEmpty().withMessage("Title is required"),
+  body("text").isString().optional().withMessage("Text is required"),
+  body("subTitle").isString().optional(),
+  body("translations").isArray().optional(),
 ];
 
 const translationValidationRules = [
@@ -20,6 +21,7 @@ const translationValidationRules = [
     .notEmpty()
     .trim()
     .withMessage("Translation text is required"),
+  body("description").isString().optional().trim(),
 ];
 
 const idValidationRule = [
@@ -119,19 +121,20 @@ export const uploadDuaAudio = [
   idValidationRule,
   handleValidationErrors,
   async (req, res) => {
+    console.log(req.params.id);
+    console.log(req.file);
     try {
-      const dua = await Dua.findById(req.params.id);
+      const dua = await Dua.findByIdAndUpdate(
+        req.params.id,
+        {
+          audioFileId: new mongoose.Types.ObjectId(req.file.id),
+        },
+        { new: true }
+      );
+
       if (!dua) {
         return res.status(404).json({ message: "Dua not found" });
       }
-
-      if (!req.file) {
-        return res.status(400).json({ message: "Audio file is required" });
-      }
-
-      dua.audioFileId = new mongoose.Types.ObjectId(file.id);
-
-      await dua.save();
 
       res.json({ message: "Audio file uploaded successfully" });
     } catch (error) {
@@ -255,7 +258,8 @@ export const addDuaTranslation = [
   translationValidationRules,
   handleValidationErrors,
   async (req, res) => {
-    const { language, text } = req.body;
+    const { language, text, description } = req.body;
+
     try {
       const dua = await Dua.findById(req.params.id);
       if (!dua) {
@@ -269,7 +273,7 @@ export const addDuaTranslation = [
         return res.status(400).json({ message: "Translation already exists" });
       }
 
-      dua.translations.push({ language, text });
+      dua.translations.push({ language, text, description });
 
       await dua.save();
 
@@ -285,7 +289,8 @@ export const updateDuaTranslation = [
   translationValidationRules,
   handleValidationErrors,
   async (req, res) => {
-    const { language, text } = req.body;
+    console.log(req.body);
+    const { language, text, description } = req.body;
     try {
       const dua = await Dua.findById(req.params.id);
       if (!dua) {
@@ -298,6 +303,7 @@ export const updateDuaTranslation = [
       }
 
       translation.text = text;
+      translation.description = description;
 
       await dua.save();
 

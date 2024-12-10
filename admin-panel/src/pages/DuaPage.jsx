@@ -49,6 +49,8 @@ export function DuaPage() {
   const [newDua, setNewDua] = useState({
     title: "",
     subTitle: "",
+    text: "",
+    translations: [],
   });
 
   const fetchDuas = useCallback(async () => {
@@ -92,10 +94,7 @@ export function DuaPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...newDua,
-          handleEditDuaNumber: Number(newDua.handleEditDuaNumber),
-        }),
+        body: JSON.stringify(newDua),
       });
 
       const result = await response.json();
@@ -108,6 +107,8 @@ export function DuaPage() {
       setNewDua({
         title: "",
         subTitle: "",
+        text: "",
+        translations: [],
       });
     } catch (error) {
       toast.error("Failed to add Dua");

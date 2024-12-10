@@ -7,6 +7,7 @@ import {
   addDuaTranslation,
   deleteDua,
   deleteDuaAudio,
+  deleteDuaTranslation,
   getAllDuas,
   getDuaAudio,
   getDuaById,
@@ -182,19 +183,19 @@ router.post(
 );
 router.delete("/duas/:id/audio", isAuthenticatedAdmin, deleteDuaAudio);
 router.post(
-  "/duas/:id/transliterations",
+  "/duas/:id/translations",
   isAuthenticatedAdmin,
   addDuaTranslation
 );
 router.put(
-  "/duas/:id/transliterations/:language",
+  "/duas/:id/translations",
   isAuthenticatedAdmin,
   updateDuaTranslation
 );
 router.delete(
-  "/duas/:id/transliterations/:language",
+  "/duas/:id/translations",
   isAuthenticatedAdmin,
-  deleteTranslation
+  deleteDuaTranslation
 );
 
 export default router;

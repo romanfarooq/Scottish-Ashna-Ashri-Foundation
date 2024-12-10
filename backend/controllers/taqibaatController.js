@@ -136,7 +136,7 @@ export const deleteTaqibaat = [
         await gfsAudio.delete(taqibaat.audioFileId);
       }
 
-      await taqibaat.remove();
+      await Taqibaat.findByIdAndDelete(req.params.id);
 
       res.json({ message: "Taqibaat deleted successfully" });
     } catch (error) {

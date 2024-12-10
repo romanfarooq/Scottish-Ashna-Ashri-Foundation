@@ -133,7 +133,7 @@ export const deleteSahifa = [
         await gfsAudio.delete(sahifa.audioFileId);
       }
 
-      await sahifa.remove();
+      await Sahifa.findByIdAndDelete(req.params.id);
 
       res.json({ message: "Sahifa deleted successfully" });
     } catch (error) {

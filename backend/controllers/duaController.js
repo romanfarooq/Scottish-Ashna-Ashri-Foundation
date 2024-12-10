@@ -129,7 +129,7 @@ export const deleteDua = [
         await gfsAudio.delete(dua.audioFileId);
       }
 
-      await dua.remove();
+      await Dua.findByIdAndDelete(req.params.id);
 
       res.json({ message: "Dua deleted successfully" });
     } catch (error) {

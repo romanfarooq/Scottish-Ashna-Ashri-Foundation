@@ -133,7 +133,7 @@ export const deleteSermon = [
         await gfsAudio.delete(sermon.audioFileId);
       }
 
-      await sermon.remove();
+      await Sermon.findByIdAndDelete(req.params.id);
 
       res.json({ message: "Sermon deleted successfully" });
     } catch (error) {

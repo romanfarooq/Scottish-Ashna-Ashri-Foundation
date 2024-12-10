@@ -14,6 +14,7 @@ import {
   BookOpen,
   Calendar,
   CheckSquare,
+  Clock,
   Compass,
   Contact,
   DollarSign,
@@ -111,6 +112,11 @@ const menuItems = [
         title: "Qibla Finder",
         url: "#",
         icon: Compass,
+      },
+      {
+        title: "Prayer Times",
+        url: "/prayer-times",
+        icon: Clock, 
       },
       {
         title: "Dua's",

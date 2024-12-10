@@ -129,7 +129,7 @@ export const deleteZiarah = [
         await gfsAudio.delete(ziarah.audioFileId);
       }
 
-      await ziarah.remove();
+      await Ziarah.findByIdAndDelete(req.params.id);
 
       res.json({ message: "Ziarah deleted successfully" });
     } catch (error) {
